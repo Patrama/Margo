@@ -33,8 +33,16 @@ function initTypewriter(el, options) {
   var charIndex = 0;
   var isDeleting = false;
   var timerId = null;
+  var isHidden = false;
 
   function tick() {
+    // Skip rendering while the tab is hidden (efficiency mode), saving
+    // CPU/battery, and resume right where it left off when visible again.
+    if (isHidden) {
+      timerId = window.setTimeout(tick, 250);
+      return;
+    }
+
     var current = phrases[phraseIndex];
     charIndex += isDeleting ? -1 : 1;
     render(current.substring(0, charIndex));
@@ -53,11 +61,24 @@ function initTypewriter(el, options) {
     timerId = window.setTimeout(tick, delay);
   }
 
+  function onVisibilityChange() {
+    isHidden = document.hidden;
+  }
+
+  var efficiency = opts.efficiency !== false;
+  if (efficiency) {
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    isHidden = document.hidden;
+  }
+
   tick();
 
   return {
     stop: function () {
       if (timerId) window.clearTimeout(timerId);
+      if (efficiency) {
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+      }
     },
   };
 }

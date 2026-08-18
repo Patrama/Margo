@@ -144,6 +144,10 @@ body {
   overflow: hidden;
   min-height: 0;
   padding: 0 1rem;
+  /* Secondary price groups (e.g. Online vs Offline) render side-by-side */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1.25rem;
 }
 .card.expanded .card-body {
   grid-template-rows: 1fr;
@@ -153,8 +157,14 @@ body {
   padding: 1rem;
 }
 
+/* When only one group is present (e.g. DETAILS active), keep it full width
+   in the first column instead of squeezing into half a row. */
+.group:only-child {
+  grid-column: 1 / -1;
+}
 .group {
   margin-bottom: 1rem;
+  min-width: 0; /* allow long column values to wrap inside the grid cell */
 }
 .group:last-child {
   margin-bottom: 0;

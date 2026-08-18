@@ -5,7 +5,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Catalog Explorer — search SKU, prices, and product details from the catalog."
+    />
     <title>Catalog Explorer 🍃</title>
+
+    <!-- Inline SVG favicon: zero extra requests, no favicon.ico 404 -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🍃</text></svg>"
+    />
+
+    <!-- Early connection hints for the data origins (CSV + product images) -->
+    <link rel="preconnect" href="https://docs.google.com" crossorigin />
+    <link rel="preconnect" href="https://drive.google.com" />
+    <link rel="dns-prefetch" href="https://docs.google.com" />
+    <link rel="dns-prefetch" href="https://drive.google.com" />
+    <link rel="dns-prefetch" href="https://googleusercontent.com" />
+    <!-- HTTPS proxy used only when catalog links are plain http:// -->
+    <link rel="dns-prefetch" href="https://images.weserv.nl" />
+
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
@@ -83,9 +103,10 @@
       </div>
     </div>
 
-    <script src="js/CONFIG.js"></script>
-    <script src="js/typewriter-effect.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/main.js"></script>
+    <!-- All scripts deferred: none render-blocking; execution order is
+         preserved (CONFIG → typewriter → app). -->
+    <script src="js/CONFIG.js" defer></script>
+    <script src="js/typewriter-effect.js" defer></script>
+    <script src="js/app.js" defer></script>
   </body>
 </html>

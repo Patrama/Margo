@@ -94,6 +94,8 @@ function applyTexts() {
         deleteSpeed: timing.deleteSpeed,
         holdDelay: timing.holdDelay,
         pauseDelay: timing.pauseDelay,
+        // Pause the typewriter while the tab is hidden when efficiency === true
+        efficiency: timing.efficiency,
       });
     } else {
       search.placeholder = CONFIG.texts.searchPlaceholder;
@@ -189,8 +191,16 @@ function setData(data, categories) {
 }
 
 async function fetchCSV(fromCache) {
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    CONFIG.fetchTimeout || 30000,
+  );
   try {
-    const res = await fetch(CONFIG.csvUrl, { cache: "force-cache" });
+    const res = await fetch(CONFIG.csvUrl, {
+      cache: "force-cache",
+      signal: controller.signal,
+    });
     const text = await res.text();
     const { data, categories } = parseCSV(text);
 
@@ -209,9 +219,19 @@ async function fetchCSV(fromCache) {
     // only refresh the UI when the fetched data actually changed
     // or when the cache has expired (handled above).
   } catch (err) {
-    if (!fromCache) {
-      document.getElementById("loading").innerHTML = CONFIG.texts.loadingError;
+    if (err.name === "AbortError") {
+      // Network hung (no data, poor connection) — stop the spinner
+      // instead of loading forever.
+      if (!fromCache) {
+        document.getElementById("loading").textContent =
+          CONFIG.texts.loadingError;
+      }
+    } else if (!fromCache) {
+      document.getElementById("loading").textContent =
+        CONFIG.texts.loadingError;
     }
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -623,3 +643,6 @@ function closeModal(e, id) {
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => "&#" + c.charCodeAt(0) + ";");
 }
+
+// Bootstrap — deferred scripts run after DOM parse, so DOM is ready here.
+init();

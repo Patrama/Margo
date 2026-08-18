@@ -15,7 +15,7 @@ const CONFIG = {
   categoryItemHeight: 48,
 
   // Default active tab shown in the card preview
-  defaultActiveTab: "ONLINE_PRICE",
+  defaultActiveTab: "DETAILS",
 
   // localStorage key used to persist user preferences
   cacheKey: "catalogCache",
@@ -33,6 +33,10 @@ const CONFIG = {
   // Prevents an infinite spinner when the URL hangs or is blocked.
   imageLoadTimeout: 20000,
 
+  // Max time (ms) to wait for the CSV fetch before aborting. Prevents the
+  // loading spinner from hanging forever on a dead/unreachable network.
+  fetchTimeout: 30000,
+
   // Wide-screen breakpoint (px) for switching to the multi-column grid
   gridBreakpoint: 900,
 
@@ -47,30 +51,21 @@ const CONFIG = {
     BERAT: "Berat (gr)",
     "MIN PEMBELIAN (PCS)": "Min Buy",
     "MAKS. PEMBELIAN (PCS)": "Max Buy",
-    "HARGA ON": "Online Price",
-    "GROSS ON": "Online Gross",
-    "HARGA OFF": "Offline Price",
-    "GROSS OFF": "Offline Gross",
+    "HARGA ON": "Normal",
+    "GROSS ON": "Grosir",
+    "HARGA OFF": "Normal",
+    "GROSS OFF": "Grosir",
     // LINK: "Gambar",
-  },
-
-  // CSS injected into <head> at runtime (keeps layout tuning in CONFIG)
-  styles: {
-    specGrid: `
-.spec-grid {
-  display: grid;
-  grid-template-columns: auto auto 1fr; /* 1st col wraps label, 2nd col wraps colon, 3rd takes remaining space */
-  gap: 4px 12px; /* Row gap and column gap */
-  align-items: center;
-}
-`,
   },
 
   // Tab definitions: label + which CSV columns to display
   tabs: {
-    ONLINE_PRICE: { label: "ONLINE PRICE 💰", cols: ["HARGA ON", "GROSS ON"] },
+    ONLINE_PRICE: {
+      label: "Harga Online 💰",
+      cols: ["HARGA ON", "GROSS ON"],
+    },
     OFFLINE_PRICE: {
-      label: "OFFLINE PRICE 🏪",
+      label: "Harga Offline 🏪",
       cols: ["HARGA OFF", "GROSS OFF"],
     },
     DETAILS: {
@@ -84,15 +79,18 @@ const CONFIG = {
   // text below with no animation.
   searchPlaceholderPhrases: [
     "Search SKU or others... 🔍",
-    "Try a product name...",
-    "Try a category...",
-    "Try a size in mm...",
+    "Try a Nama > BULAT or others",
+    "Try a Kategori > CHITOSE or others",
+    "Try a Ukuran > M8 or others",
   ],
   searchPlaceholderTiming: {
     typeSpeed: 70,
     deleteSpeed: 35,
     holdDelay: 1600,
     pauseDelay: 400,
+    // Pause the typewriter while the tab is hidden (saves CPU/battery).
+    // Set to false to keep the animation running at all times.
+    efficiency: true,
   },
 
   // Tunable UI texts
@@ -111,5 +109,17 @@ const CONFIG = {
     loadMore: "Load more…",
     loadingImage: "Loading image…",
     imageLoadError: "Image failed to load ❌",
+  },
+
+  // CSS injected into <head> at runtime (keeps layout tuning in CONFIG)
+  styles: {
+    specGrid: `
+.spec-grid {
+  display: grid;
+  grid-template-columns: auto auto 1fr; /* 1st col wraps label, 2nd col wraps colon, 3rd takes remaining space */
+  gap: 4px 12px; /* Row gap and column gap */
+  align-items: center;
+}
+`,
   },
 };
