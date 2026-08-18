@@ -391,6 +391,14 @@ function normalizeImageUrl(url) {
   // docs.google.com/uc?export=open&id=<ID>
   m = url.match(/docs\.google\.com\/uc\?(?:.*&)?id=([^&#]+)/);
   if (m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
+  // Route insecure http:// images through a free HTTPS image proxy so the
+  // page (served over HTTPS) never hits a mixed-content block.
+  if (url.startsWith("http://")) {
+    return (
+      "https://images.weserv.nl/?url=" +
+      encodeURIComponent(url.replace(/^https?:\/\//, ""))
+    );
+  }
   return url;
 }
 
