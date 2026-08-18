@@ -59,7 +59,28 @@ function applyTexts() {
   if (buttons[1]) buttons[1].textContent = CONFIG.texts.tabsButton;
 
   const search = document.getElementById("search-input");
-  if (search) search.placeholder = CONFIG.texts.searchPlaceholder;
+  if (search) {
+    const phrases = CONFIG.searchPlaceholderPhrases;
+    if (
+      Array.isArray(phrases) &&
+      phrases.length &&
+      typeof initTypewriter === "function"
+    ) {
+      // Rotating placeholder. initTypewriter writes to el.placeholder for
+      // <input>/<textarea> elements automatically.
+      const timing = CONFIG.searchPlaceholderTiming || {};
+      initTypewriter(search, {
+        phrases,
+        placeholderPrefix: "", // phrases are full strings, no static prefix
+        typeSpeed: timing.typeSpeed,
+        deleteSpeed: timing.deleteSpeed,
+        holdDelay: timing.holdDelay,
+        pauseDelay: timing.pauseDelay,
+      });
+    } else {
+      search.placeholder = CONFIG.texts.searchPlaceholder;
+    }
+  }
 
   const catSearch = document.querySelector(".cat-search");
   if (catSearch)
@@ -334,7 +355,7 @@ function createCardHTML(item, index) {
   let html = `<div class="card" data-index="${index}">`;
   html += `<div class="card-header">`;
   html += `<div class="card-info">`;
-  html += `<div class="sku-title">${escapeHtml(item["SKU"] || "-")}</div>`;
+  html += `<div class="sku-title">SKU: ${escapeHtml(item["SKU"] || "-")}</div>`;
   html += `<div class="tab-preview">`;
   const activeTabInfo = CONFIG.tabs[state.activeTab];
   activeTabInfo.cols.forEach((col) => {

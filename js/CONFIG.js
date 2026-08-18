@@ -67,6 +67,22 @@ const CONFIG = {
     },
   },
 
+  // Rotating phrases typed into the search box placeholder (typewriter
+  // effect). Leave empty ([]) to fall back to the static searchPlaceholder
+  // text below with no animation.
+  searchPlaceholderPhrases: [
+    "Search SKU or others... 🔍",
+    "Try a product name...",
+    "Try a category...",
+    "Try a size in mm...",
+  ],
+  searchPlaceholderTiming: {
+    typeSpeed: 70,
+    deleteSpeed: 35,
+    holdDelay: 1600,
+    pauseDelay: 400,
+  },
+
   // Tunable UI texts
   texts: {
     searchPlaceholder: "Search SKU or others... 🔍",
@@ -74,7 +90,7 @@ const CONFIG = {
     loadingError: "Error loading data ❌",
     noLinkAlert: "No link available",
     allCategories: "ALL",
-    linkButton: "🖼️",
+    linkButton: "Photo Produk 🖼️",
     tabsButton: "Tabs ⚙️",
     categoriesButton: "Categories 🍃",
     selectCategoryTitle: "Select Category ✅",
