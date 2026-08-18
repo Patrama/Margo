@@ -20,8 +20,11 @@ const state = {
   selectedCategory: "",
   activeTab: CONFIG.defaultActiveTab,
   visibleCount: 0, // how many filtered cards are currently rendered
+  lastFiltered: [], // filtered result of the last render (for click lookup)
   searchTimer: null,
 };
+
+let imgLoadTimer = null; // timeout handle for the modal image load
 
 // ------------------------------------------------------------
 // Init
@@ -268,6 +271,7 @@ function renderList() {
   state.visibleCount = 0;
 
   const filtered = getFiltered();
+  state.lastFiltered = filtered;
   const loadMoreBtn = document.getElementById("load-more");
   if (filtered.length === 0) {
     if (loadMoreBtn) loadMoreBtn.style.display = "none";
@@ -306,6 +310,7 @@ function bindLoadMore() {
   btn.addEventListener("click", () => {
     const offset = parseInt(btn.dataset.offset || "0", 10);
     const filtered = getFiltered();
+    state.lastFiltered = filtered;
     renderBatch(filtered, offset);
     updateLoadMore(filtered.length);
   });
@@ -356,7 +361,9 @@ function bindListClick() {
     if (linkBtn) {
       e.stopPropagation();
       const card = e.target.closest(".card");
-      const item = getFiltered()[parseInt(card.dataset.index, 10)];
+      const item = (state.lastFiltered || getFiltered())[
+        parseInt(card.dataset.index, 10)
+      ];
       if (!item) return;
       const url = item["LINK"];
       if (url) {
@@ -374,21 +381,58 @@ function bindListClick() {
   });
 }
 
+// Google Drive share links are HTML pages — an <img> cannot render them.
+// Normalize known share/uc formats into a direct image URL.
+function normalizeImageUrl(url) {
+  if (!url) return url;
+  // drive.google.com/file/d/<ID>/view?usp=sharing
+  let m = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/);
+  if (m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
+  // docs.google.com/uc?export=open&id=<ID>
+  m = url.match(/docs\.google\.com\/uc\?(?:.*&)?id=([^&#]+)/);
+  if (m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
+  return url;
+}
+
 function openImageModal(url) {
   const img = document.getElementById("modal-image");
   const loading = document.getElementById("img-loading");
-  // Instant feedback, even on very slow networks
+
+  // Cancel any previous load attempt — stale handlers/events must not fire
+  clearTimeout(imgLoadTimer);
+  img.onload = null;
+  img.onerror = null;
+  img.removeAttribute("src");
+
+  // Reset spinner state
   loading.style.display = "block";
+  loading.textContent = CONFIG.texts.loadingImage;
   img.style.display = "none";
+
+  // Show the modal FIRST so the image is in the layout tree when the
+  // browser begins fetching (no lazy-load deferral).
+  openModal("img-modal");
+
+  const finalUrl = normalizeImageUrl(url);
   img.onload = () => {
+    clearTimeout(imgLoadTimer);
     loading.style.display = "none";
     img.style.display = "block";
   };
   img.onerror = () => {
-    loading.textContent = CONFIG.texts.loadingError;
+    clearTimeout(imgLoadTimer);
+    loading.textContent = CONFIG.texts.imageLoadError;
   };
-  img.src = url;
-  openModal("img-modal");
+
+  // If the URL hangs (blocked host, dead link, offline), stop the spinner
+  // instead of loading forever.
+  imgLoadTimer = setTimeout(() => {
+    if (!img.complete) {
+      loading.textContent = CONFIG.texts.imageLoadError;
+    }
+  }, CONFIG.imageLoadTimeout);
+
+  img.src = finalUrl;
 }
 
 // ------------------------------------------------------------
@@ -500,6 +544,10 @@ function openModal(id) {
 function closeModal(e, id) {
   if (e && e.target !== e.currentTarget) return;
   document.getElementById(id).classList.remove("active");
+  if (id === "img-modal") {
+    // Cancelled by the user — stop the timeout so it can't flip UI later
+    clearTimeout(imgLoadTimer);
+  }
 }
 
 function escapeHtml(str) {

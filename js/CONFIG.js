@@ -29,6 +29,10 @@ const CONFIG = {
   // How long (ms) the cached CSV data is considered fresh before a force refresh
   cacheTTL: 24 * 60 * 60 * 1000, // 24 hours
 
+  // Max time (ms) to wait for a modal image load before showing an error.
+  // Prevents an infinite spinner when the URL hangs or is blocked.
+  imageLoadTimeout: 20000,
+
   // Wide-screen breakpoint (px) for switching to the multi-column grid
   gridBreakpoint: 900,
 
@@ -78,5 +82,6 @@ const CONFIG = {
     filterCategoriesPlaceholder: "Filter categories... 🔍",
     loadMore: "Load more…",
     loadingImage: "Loading image…",
+    imageLoadError: "Image failed to load ❌",
   },
 };

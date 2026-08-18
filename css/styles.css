@@ -59,7 +59,7 @@ body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg);
 .cat-item:hover:not(.active) { background: #f3f4f6; }
 
 /* Image Modal */
-#img-modal-content { max-width: 90vw; background: transparent; padding: 0; align-items: center; justify-content: center; box-shadow: none; }
+#img-modal-content { width: fit-content; max-width: 90vw; background: transparent; padding: 0; align-items: center; justify-content: center; box-shadow: none; }
 #modal-image { max-width: 100%; max-height: 85vh; border-radius: 0.5rem; background: white; padding: 0.5rem; }
 #img-loading { display: none; color: white; font-weight: 500; padding: 1rem; }
 
