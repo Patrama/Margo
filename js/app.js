@@ -62,7 +62,8 @@ function applyTexts() {
   if (search) search.placeholder = CONFIG.texts.searchPlaceholder;
 
   const catSearch = document.querySelector(".cat-search");
-  if (catSearch) catSearch.placeholder = CONFIG.texts.filterCategoriesPlaceholder;
+  if (catSearch)
+    catSearch.placeholder = CONFIG.texts.filterCategoriesPlaceholder;
 
   const catTitle = document.querySelector("#cat-modal .modal-header h3");
   if (catTitle) catTitle.textContent = CONFIG.texts.selectCategoryTitle;
@@ -155,7 +156,11 @@ async function fetchCSV(fromCache) {
     const { data, categories } = parseCSV(text);
 
     const cached = readDataCache();
-    if (!fromCache || !cached || cached.timestamp > Date.now() - CONFIG.cacheTTL) {
+    if (
+      !fromCache ||
+      !cached ||
+      cached.timestamp > Date.now() - CONFIG.cacheTTL
+    ) {
       setData(data, categories);
       writeDataCache(data, categories);
       document.getElementById("loading").style.display = "none";
@@ -253,8 +258,16 @@ function getFiltered() {
   if (query) {
     // SKU matches float to top (stable)
     filtered.sort((a, b) => {
-      const aSku = String(a["SKU"] || "").toLowerCase().includes(query) ? 1 : 0;
-      const bSku = String(b["SKU"] || "").toLowerCase().includes(query) ? 1 : 0;
+      const aSku = String(a["SKU"] || "")
+        .toLowerCase()
+        .includes(query)
+        ? 1
+        : 0;
+      const bSku = String(b["SKU"] || "")
+        .toLowerCase()
+        .includes(query)
+        ? 1
+        : 0;
       return bSku - aSku;
     });
   }
@@ -321,7 +334,7 @@ function createCardHTML(item, index) {
   let html = `<div class="card" data-index="${index}">`;
   html += `<div class="card-header">`;
   html += `<div class="card-info">`;
-  html += `<div class="sku-title">SKU: ${escapeHtml(item["SKU"] || "-")}</div>`;
+  html += `<div class="sku-title">${escapeHtml(item["SKU"] || "-")}</div>`;
   html += `<div class="tab-preview">`;
   const activeTabInfo = CONFIG.tabs[state.activeTab];
   activeTabInfo.cols.forEach((col) => {
@@ -461,7 +474,9 @@ function renderCategories(filterText) {
   grid.innerHTML = "";
 
   const term = (filterText || "").toLowerCase();
-  const filtered = state.categories.filter((c) => c.toLowerCase().includes(term));
+  const filtered = state.categories.filter((c) =>
+    c.toLowerCase().includes(term),
+  );
 
   let html = `<div class="cat-item ${state.selectedCategory === "" ? "active" : ""}" data-cat="">${escapeHtml(CONFIG.texts.allCategories)}</div>`;
   filtered.forEach((cat) => {
