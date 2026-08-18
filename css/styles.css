@@ -169,17 +169,20 @@ body {
   border-bottom: 1px solid var(--border);
   padding-bottom: 0.25rem;
 }
-.group-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.875rem;
+.group .spec-grid {
   margin-bottom: 0.25rem;
 }
-.group-row span:first-child {
+.spec-grid .label {
   color: var(--text-light);
+  font-size: 0.875rem;
 }
-.group-row span:last-child {
+.spec-grid .colon {
+  color: var(--text-light);
+  font-size: 0.875rem;
+}
+.spec-grid .value {
   font-weight: 600;
+  font-size: 0.875rem;
 }
 
 /* Load more */

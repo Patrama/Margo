@@ -54,6 +54,18 @@ const CONFIG = {
     // LINK: "Gambar",
   },
 
+  // CSS injected into <head> at runtime (keeps layout tuning in CONFIG)
+  styles: {
+    specGrid: `
+.spec-grid {
+  display: grid;
+  grid-template-columns: auto auto 1fr; /* 1st col wraps label, 2nd col wraps colon, 3rd takes remaining space */
+  gap: 4px 12px; /* Row gap and column gap */
+  align-items: center;
+}
+`,
+  },
+
   // Tab definitions: label + which CSV columns to display
   tabs: {
     ONLINE_PRICE: { label: "ONLINE PRICE 💰", cols: ["HARGA ON", "GROSS ON"] },
@@ -91,7 +103,7 @@ const CONFIG = {
     noLinkAlert: "No link available",
     allCategories: "ALL",
     linkButton: "🖼️",
-    tabsButton: "Tabs ⚙️",
+    tabsButton: "First Tabs ⚙️",
     categoriesButton: "Categories 🍃",
     selectCategoryTitle: "Select Category ✅",
     selectTabTitle: "Select Active Tab ⚙️",

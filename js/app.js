@@ -30,6 +30,7 @@ let imgLoadTimer = null; // timeout handle for the modal image load
 // Init
 // ------------------------------------------------------------
 function init() {
+  injectConfigStyles();
   applyTexts();
   loadCache();
   renderOptions();
@@ -47,6 +48,23 @@ function init() {
     fetchCSV(true);
   } else {
     fetchCSV(false);
+  }
+}
+
+// ------------------------------------------------------------
+// Config styles (injected from CONFIG.js into <head>)
+// ------------------------------------------------------------
+function injectConfigStyles() {
+  const styles = CONFIG.styles;
+  if (!styles) return;
+  let cssText = "";
+  Object.values(styles).forEach((css) => {
+    cssText += css + "\n";
+  });
+  if (cssText) {
+    const styleEl = document.createElement("style");
+    styleEl.textContent = cssText;
+    document.head.appendChild(styleEl);
   }
 }
 
@@ -358,10 +376,14 @@ function createCardHTML(item, index) {
   html += `<div class="sku-title">${escapeHtml(item["SKU"] || "-")}</div>`;
   html += `<div class="tab-preview">`;
   const activeTabInfo = CONFIG.tabs[state.activeTab];
+  html += `<div class="spec-grid">`;
   activeTabInfo.cols.forEach((col) => {
     const name = CONFIG.columnRenames[col] || col;
-    html += `<div>${escapeHtml(name)}: <strong>${escapeHtml(item[col] || "-")}</strong></div>`;
+    html += `<span class="label">${escapeHtml(name)}</span>`;
+    html += `<span class="colon">:</span>`;
+    html += `<span class="value">${escapeHtml(item[col] || "-")}</span>`;
   });
+  html += `</div>`;
   html += `</div>`;
   html += `</div>`;
   html += `<button class="btn-link">${escapeHtml(CONFIG.texts.linkButton)}</button>`;
@@ -374,10 +396,14 @@ function createCardHTML(item, index) {
     if (key === state.activeTab) return;
     const t = CONFIG.tabs[key];
     html += `<div class="group"><div class="group-title">${escapeHtml(t.label)}</div>`;
+    html += `<div class="spec-grid">`;
     t.cols.forEach((col) => {
       const name = CONFIG.columnRenames[col] || col;
-      html += `<div class="group-row"><span>${escapeHtml(name)}</span><span>${escapeHtml(item[col] || "-")}</span></div>`;
+      html += `<span class="label">${escapeHtml(name)}</span>`;
+      html += `<span class="colon">:</span>`;
+      html += `<span class="value">${escapeHtml(item[col] || "-")}</span>`;
     });
+    html += `</div>`;
     html += `</div>`;
   });
   html += `</div></div>`;
