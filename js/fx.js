@@ -19,7 +19,7 @@
   if (window.__FX_INJECTED__) return;
   window.__FX_INJECTED__ = true;
 
-  const fx = (window.CONFIG && CONFIG.fx) || {};
+  const fx = (typeof CONFIG !== "undefined" && CONFIG.fx) || {};
 
   // Keys that are cheap no matter what — ignored by the slow-network
   // auto-downgrade (they only react to an explicit level 0).

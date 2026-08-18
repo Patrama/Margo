@@ -140,7 +140,7 @@ const CONFIG = {
     // Frosted glass (backdrop-filter)
     backdropBlurButtons: 0, // header buttons + image open button
     backdropBlurSearch: 2, // search input
-    backdropBlurCards: 0, // product cards + expanded body
+    backdropBlurCards: 2, // product cards + expanded body
     backdropBlurModal: 2, // modal backdrop overlay
     panelBlurModal: 2, // modal glass panel
 
@@ -165,3 +165,7 @@ const CONFIG = {
     textGradient: 1, // gradient SKU title (background-clip only)
   },
 };
+
+// Also expose on window for any code (e.g. js/fx.js) that reads it,
+// while remaining a global lexical binding for the rest of the app.
+window.CONFIG = CONFIG;
