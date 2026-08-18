@@ -138,19 +138,19 @@ const CONFIG = {
     blobAnimation: 0, // infinite morph/drift blob animation
 
     // Frosted glass (backdrop-filter)
-    backdropBlurButtons: 2, // header buttons + image open button
+    backdropBlurButtons: 0, // header buttons + image open button
     backdropBlurSearch: 2, // search input
-    backdropBlurCards: 2, // product cards + expanded body
+    backdropBlurCards: 0, // product cards + expanded body
     backdropBlurModal: 2, // modal backdrop overlay
     panelBlurModal: 2, // modal glass panel
 
     // Glows / shadows
-    glowHover: 2, // colored glow on hover
-    glowActive: 2, // glow on selected category / close button
-    glowFocus: 2, // teal focus ring + glow
-    glowLoadMore: 2, // "Load more" glow
-    glowText: 2, // text glow (loading, buttons, active tile)
-    shadowDepth: 2, // drop shadows
+    glowHover: 0, // colored glow on hover
+    glowActive: 0, // glow on selected category / close button
+    glowFocus: 0, // teal focus ring + glow
+    glowLoadMore: 0, // "Load more" glow
+    glowText: 0, // text glow (loading, buttons, active tile)
+    shadowDepth: 0, // drop shadows
 
     // Motion
     entranceAnimations: 0, // card / modal entrance animation
@@ -158,7 +158,7 @@ const CONFIG = {
     transitionEase: 0, // hover/expand transition easing
 
     // Styling the scrollbar
-    scrollbarStyle: 2, // 30px gradient bar -> thin flat bar
+    scrollbarStyle: 1, // 30px gradient bar -> thin flat bar
 
     // Cheap effects — safe to keep at full strength
     hoverLift: 1, // translateY hover lift (transform only)
