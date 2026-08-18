@@ -90,7 +90,7 @@ const CONFIG = {
     loadingError: "Error loading data ❌",
     noLinkAlert: "No link available",
     allCategories: "ALL",
-    linkButton: "Photo Produk 🖼️",
+    linkButton: "🖼️",
     tabsButton: "Tabs ⚙️",
     categoriesButton: "Categories 🍃",
     selectCategoryTitle: "Select Category ✅",

@@ -355,7 +355,7 @@ function createCardHTML(item, index) {
   let html = `<div class="card" data-index="${index}">`;
   html += `<div class="card-header">`;
   html += `<div class="card-info">`;
-  html += `<div class="sku-title">SKU: ${escapeHtml(item["SKU"] || "-")}</div>`;
+  html += `<div class="sku-title">${escapeHtml(item["SKU"] || "-")}</div>`;
   html += `<div class="tab-preview">`;
   const activeTabInfo = CONFIG.tabs[state.activeTab];
   activeTabInfo.cols.forEach((col) => {
