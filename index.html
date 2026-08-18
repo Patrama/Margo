@@ -104,8 +104,10 @@
     </div>
 
     <!-- All scripts deferred: none render-blocking; execution order is
-         preserved (CONFIG → typewriter → app). -->
+         preserved (CONFIG → fx → typewriter → app). fx.js only injects
+         CSS from CONFIG.fx — it never touches the typewriter or app. -->
     <script src="js/CONFIG.js" defer></script>
+    <script src="js/fx.js" defer></script>
     <script src="js/typewriter-effect.js" defer></script>
     <script src="js/app.js" defer></script>
   </body>
