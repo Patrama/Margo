@@ -21,7 +21,7 @@ const CONFIG = {
   cacheKey: "catalogCache",
 
   // Batch size for paginated list rendering (keeps DOM small on low-end devices)
-  pageSize: 50,
+  pageSize: 25,
 
   // Debounce delay (ms) for the search input
   debounceDelay: 250,
