@@ -84,8 +84,27 @@ function applyTexts() {
   }
 
   const catSearch = document.querySelector(".cat-search");
-  if (catSearch)
-    catSearch.placeholder = CONFIG.texts.filterCategoriesPlaceholder;
+  if (catSearch) {
+    const catPhrases = CONFIG.filterCategoriesPlaceholderPhrases;
+    if (
+      Array.isArray(catPhrases) &&
+      catPhrases.length &&
+      typeof initTypewriter === "function"
+    ) {
+      const timing = CONFIG.searchPlaceholderTiming || {};
+      initTypewriter(catSearch, {
+        phrases: catPhrases,
+        placeholderPrefix: "",
+        typeSpeed: timing.typeSpeed,
+        deleteSpeed: timing.deleteSpeed,
+        holdDelay: timing.holdDelay,
+        pauseDelay: timing.pauseDelay,
+        efficiency: timing.efficiency,
+      });
+    } else {
+      catSearch.placeholder = CONFIG.texts.filterCategoriesPlaceholder;
+    }
+  }
 
   const catTitle = document.querySelector("#cat-modal .modal-header h3");
   if (catTitle) catTitle.textContent = CONFIG.texts.selectCategoryTitle;
@@ -138,7 +157,8 @@ function initTheme() {
 }
 
 function toggleTheme() {
-  const current = document.documentElement.getAttribute("data-theme") || "light";
+  const current =
+    document.documentElement.getAttribute("data-theme") || "light";
   const next = current === "light" ? "dark" : "light";
   document.documentElement.setAttribute("data-theme", next);
   localStorage.setItem("theme", next);
@@ -457,22 +477,94 @@ function bindLoadMore() {
 // ------------------------------------------------------------
 // Delegated Events
 // ------------------------------------------------------------
+// The image button now serves two purposes on the same element:
+//  - Tap/click (short press)  -> opens the "CANVA" column link (new tab)
+//  - Press & hold for 1s      -> opens the "LINK" column via the old
+//                                 image-preview modal (long-press = legacy path)
+let linkHoldTimer = null;
+let linkHoldTriggered = false;
+
+function getItemForBtn(btn) {
+  const card = btn.closest(".card");
+  if (!card) return null;
+  return (state.lastFiltered || getFiltered())[
+    parseInt(card.dataset.index, 10)
+  ];
+}
+
+function cancelLinkHold() {
+  clearTimeout(linkHoldTimer);
+  linkHoldTimer = null;
+}
+
 function bindListClick() {
   const container = document.getElementById("data-list");
-  container.addEventListener("click", (e) => {
+
+  container.addEventListener("pointerdown", (e) => {
     const linkBtn = e.target.closest(".btn-link");
-    if (linkBtn) {
-      e.stopPropagation();
-      const card = e.target.closest(".card");
-      const item = (state.lastFiltered || getFiltered())[
-        parseInt(card.dataset.index, 10)
-      ];
+    if (!linkBtn) return;
+    // Ignore non-primary buttons (e.g. right-click) for the hold gesture
+    if (e.button !== undefined && e.button !== 0) return;
+
+    linkHoldTriggered = false;
+    cancelLinkHold();
+
+    // Keep receiving pointer events on this element even if the
+    // finger/cursor drifts slightly during the hold.
+    if (linkBtn.setPointerCapture) {
+      try {
+        linkBtn.setPointerCapture(e.pointerId);
+      } catch (err) {}
+    }
+
+    linkBtn.classList.add("holding");
+    linkHoldTimer = setTimeout(() => {
+      linkHoldTriggered = true;
+      linkBtn.classList.remove("holding");
+      const item = getItemForBtn(linkBtn);
       if (!item) return;
       const url = item["LINK"];
       if (url) {
         openImageModal(url);
       } else {
         alert(CONFIG.texts.noLinkAlert);
+      }
+    }, CONFIG.linkHoldDelay || 1000);
+  });
+
+  const releaseHold = (e) => {
+    const linkBtn = e.target.closest(".btn-link");
+    if (linkBtn) linkBtn.classList.remove("holding");
+    cancelLinkHold();
+  };
+  container.addEventListener("pointerup", releaseHold);
+  container.addEventListener("pointercancel", releaseHold);
+
+  // Prevent the mobile long-press context menu from appearing on the button
+  container.addEventListener("contextmenu", (e) => {
+    if (e.target.closest(".btn-link")) e.preventDefault();
+  });
+
+  container.addEventListener("click", (e) => {
+    const linkBtn = e.target.closest(".btn-link");
+    if (linkBtn) {
+      e.stopPropagation();
+      // If the hold already fired (opened the LINK modal), swallow the
+      // resulting click so it doesn't also open the CANVA link.
+      if (linkHoldTriggered) {
+        linkHoldTriggered = false;
+        return;
+      }
+      cancelLinkHold();
+      linkBtn.classList.remove("holding");
+
+      const item = getItemForBtn(linkBtn);
+      if (!item) return;
+      const url = item["CANVA"];
+      if (url) {
+        window.open(url, "_blank", "noopener,noreferrer");
+      } else {
+        alert(CONFIG.texts.noCanvaAlert);
       }
       return;
     }

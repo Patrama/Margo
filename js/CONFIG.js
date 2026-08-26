@@ -21,7 +21,7 @@ const CONFIG = {
   cacheKey: "catalogCache",
 
   // Batch size for paginated list rendering (keeps DOM small on low-end devices)
-  pageSize: 25,
+  pageSize: 24,
 
   // Debounce delay (ms) for the search input
   debounceDelay: 250,
@@ -79,10 +79,18 @@ const CONFIG = {
   // text below with no animation.
   searchPlaceholderPhrases: [
     "Search SKU or others... 🔍",
-    "Try a Nama > BULAT or others",
-    "Try a Kategori > CHITOSE or others",
-    "Try a Ukuran > M8 or others",
+    "Try a Nama - BULAT or others",
+    "Try a Kategori - CHITOSE or others",
+    "Try a Ukuran - M8 or others",
   ],
+
+  filterCategoriesPlaceholderPhrases: [
+    "Filter categories... 🔍",
+    "Try a DOP - BULAT or others",
+    "Try a CHITOSE or others",
+    "Try a BAUT or others",
+  ],
+
   searchPlaceholderTiming: {
     typeSpeed: 70,
     deleteSpeed: 35,
@@ -101,7 +109,7 @@ const CONFIG = {
     noLinkAlert: "No link available",
     allCategories: "ALL",
     linkButton: "🖼️",
-    tabsButton: "First Tabs ⚙️",
+    tabsButton: "Default Tabs ⚙️",
     categoriesButton: "Categories 🍃",
     selectCategoryTitle: "Select Category ✅",
     selectTabTitle: "Select Active Tab ⚙️",

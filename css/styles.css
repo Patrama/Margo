@@ -30,11 +30,15 @@
   --lg-ink-panel: rgba(255, 255, 255, 0.65);
 
   /* Shadow variables */
-  --lg-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  --lg-shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12), 0 0 16px rgba(255, 107, 107, 0.2);
-  --lg-shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --lg-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --lg-shadow-hover:
+    0 8px 20px rgba(0, 0, 0, 0.12), 0 0 16px rgba(255, 107, 107, 0.2);
+  --lg-shadow-strong:
+    0 8px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5);
   --lg-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  --lg-shadow-search: 0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --lg-shadow-search:
+    0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 /* Dark theme */
@@ -51,11 +55,15 @@
   --lg-ink-panel: rgba(8, 12, 26, 0.32);
 
   /* Shadow variables */
-  --lg-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  --lg-shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 20px rgba(255, 107, 107, 0.25);
-  --lg-shadow-strong: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --lg-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --lg-shadow-hover:
+    0 12px 32px rgba(0, 0, 0, 0.35), 0 0 20px rgba(255, 107, 107, 0.25);
+  --lg-shadow-strong:
+    0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   --lg-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  --lg-shadow-search: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --lg-shadow-search:
+    0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 ::-webkit-scrollbar {
@@ -122,6 +130,7 @@ body {
   background-attachment: fixed;
   position: relative;
   z-index: 0;
+}
 
 /* Spec Grid (moved from CONFIG.js) */
 .spec-grid {
@@ -470,6 +479,12 @@ body::after {
 }
 [data-theme="dark"] .btn-link:hover {
   background: rgba(255, 255, 255, 0.16);
+}
+/* Brief press-and-hold feedback while the LINK (image) modal gesture
+   is armed. Transform-only so it stays cheap on low-end devices. */
+.btn-link.holding {
+  transform: scale(0.92);
+  transition: transform 0.15s ease;
 }
 
 .card-body {
