@@ -18,7 +18,11 @@
     />
 
     <!-- Early connection hints for the data origins (CSV + product images) -->
-    <link rel="preconnect" href="https://doc-0o-ac-sheets.googleusercontent.com" crossorigin />
+    <link
+      rel="preconnect"
+      href="https://doc-0o-ac-sheets.googleusercontent.com"
+      crossorigin
+    />
     <link rel="preconnect" href="https://drive.google.com" />
     <link rel="dns-prefetch" href="https://docs.google.com" />
     <link rel="dns-prefetch" href="https://drive.google.com" />
@@ -29,13 +33,26 @@
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
+    <div>
+      <span id="info-modal">
+        For default photo access consider &nbsp<strong>press and hold</strong
+        >&nbsp the icon
+      </span>
+    </div>
+
     <div class="container">
       <div class="header-controls">
         <button class="btn" onclick="openModal('cat-modal')">
           Categories 🍃
         </button>
         <button class="btn" onclick="openModal('opt-modal')">Tabs ⚙️</button>
-        <button class="btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">
+        <button
+          class="btn"
+          id="theme-toggle"
+          onclick="toggleTheme()"
+          title="Toggle theme"
+          aria-label="Toggle theme"
+        >
           🌙
         </button>
       </div>

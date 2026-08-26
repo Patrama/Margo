@@ -24,7 +24,7 @@ const CONFIG = {
   pageSize: 24,
 
   // Debounce delay (ms) for the search input
-  debounceDelay: 250,
+  debounceDelay: 500,
 
   // How long (ms) the cached CSV data is considered fresh before a force refresh
   cacheTTL: 24 * 60 * 60 * 1000, // 24 hours
