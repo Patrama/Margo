@@ -6,7 +6,7 @@
 const CONFIG = {
   // Google Sheets CSV source (published)
   csvUrl:
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSomjHV5YQROVr9ZJ5U69kOw0F4p_TZgLmvikpNM4CXSGLkRxYsjgyaaHI-onX_uXg7jL7wJuJMj0t1/pub?gid=621905479&single=true&output=csv",
+    "https://doc-0o-ac-sheets.googleusercontent.com/pub/54bogvaave6cua4cdnls17ksc4/a04vqb6o7ub311ih91fpivnjac/1787719575000/102541565158245290021/*/e@2PACX-1vSomjHV5YQROVr9ZJ5U69kOw0F4p_TZgLmvikpNM4CXSGLkRxYsjgyaaHI-onX_uXg7jL7wJuJMj0t1?gid=621905479&single=true&output=csv",
 
   // Category 4x4 layout mapping
   categoryLayout: { rows: 4, cols: 4 },
@@ -112,16 +112,7 @@ const CONFIG = {
   },
 
   // CSS injected into <head> at runtime (keeps layout tuning in CONFIG)
-  styles: {
-    specGrid: `
-.spec-grid {
-  display: grid;
-  grid-template-columns: auto auto 1fr; /* 1st col wraps label, 2nd col wraps colon, 3rd takes remaining space */
-  gap: 4px 12px; /* Row gap and column gap */
-  align-items: center;
-}
-`,
-  },
+  styles: {},
 
   // ------------------------------------------------------------
   // Effect-quality levels, evaluated by js/fx.js at runtime.

@@ -10,11 +10,35 @@
    ============================================================ */
 
 :root {
-  --lg-coral: #ff9e9e;
+  /* Accent colors */
+  --lg-coral: #ff6b6b;
   --lg-teal: #4ecdc4;
   --lg-aqua: #95e1d3;
   --lg-yellow: #f7dc6f;
   --lg-purple: #bb8fce;
+
+  /* Light theme (Optimized for visibility & contrast) */
+  --lg-ink: #f1f5f9;
+  --lg-ink-2: #e2e8f0;
+  --lg-glass: rgba(255, 255, 255, 0.75);
+  --lg-glass-strong: rgba(255, 255, 255, 0.9);
+  --lg-border: rgba(100, 116, 139, 0.25);
+  --lg-border-strong: rgba(100, 116, 139, 0.45);
+  --lg-text: #0f172a;
+  --lg-text-soft: #334155;
+  --lg-text-faint: #64748b;
+  --lg-ink-panel: rgba(255, 255, 255, 0.65);
+
+  /* Shadow variables */
+  --lg-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --lg-shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12), 0 0 16px rgba(255, 107, 107, 0.2);
+  --lg-shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --lg-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --lg-shadow-search: 0 4px 16px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* Dark theme */
+[data-theme="dark"] {
   --lg-ink: #0b1020;
   --lg-ink-2: #131a33;
   --lg-glass: rgba(255, 255, 255, 0.09);
@@ -25,6 +49,13 @@
   --lg-text-soft: rgba(255, 255, 255, 0.72);
   --lg-text-faint: rgba(255, 255, 255, 0.5);
   --lg-ink-panel: rgba(8, 12, 26, 0.32);
+
+  /* Shadow variables */
+  --lg-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  --lg-shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.35), 0 0 20px rgba(255, 107, 107, 0.25);
+  --lg-shadow-strong: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --lg-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --lg-shadow-search: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 ::-webkit-scrollbar {
@@ -38,12 +69,12 @@
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 0 5px rgba(7, 12, 30, 0.6);
+  background: var(--lg-ink-2);
+  box-shadow: inset 0 0 5px rgba(7, 12, 30, 0.2);
 }
 
 * {
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   box-sizing: border-box;
 }
 
@@ -53,7 +84,7 @@ html {
 }
 
 /* ------------------------------------------------------------
-   Living glass canvas — dark base + morphing color blobs
+   Living glass canvas — morphing color blobs
    ------------------------------------------------------------ */
 body {
   font-family:
@@ -66,6 +97,41 @@ body {
   padding: 1rem;
   min-height: 100vh;
   overflow-x: hidden;
+  background:
+    radial-gradient(
+      60% 55% at 12% 8%,
+      rgba(255, 107, 107, 0.12),
+      transparent 70%
+    ),
+    radial-gradient(
+      55% 60% at 88% 12%,
+      rgba(187, 143, 206, 0.12),
+      transparent 70%
+    ),
+    radial-gradient(
+      70% 60% at 85% 90%,
+      rgba(78, 205, 196, 0.1),
+      transparent 70%
+    ),
+    radial-gradient(
+      60% 55% at 10% 92%,
+      rgba(247, 220, 111, 0.08),
+      transparent 70%
+    ),
+    linear-gradient(160deg, var(--lg-ink) 0%, var(--lg-ink-2) 100%);
+  background-attachment: fixed;
+  position: relative;
+  z-index: 0;
+
+/* Spec Grid (moved from CONFIG.js) */
+.spec-grid {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 4px 12px;
+  align-items: center;
+}
+
+[data-theme="dark"] body {
   background:
     radial-gradient(
       60% 55% at 12% 8%,
@@ -94,11 +160,6 @@ body {
       #1b2447 70%,
       var(--lg-ink-2) 100%
     );
-  background-attachment: fixed;
-  position: relative;
-  /* Creates a stacking context so the z-index:-1 pseudo-element blobs
-     paint above the gradient background but below the content. */
-  z-index: 0;
 }
 
 /* Morphing iridescent blobs that drift behind the glass */
@@ -122,7 +183,7 @@ body::before {
   background:
     radial-gradient(circle at 30% 30%, var(--lg-coral), transparent 65%),
     radial-gradient(circle at 70% 70%, var(--lg-purple), transparent 60%);
-  opacity: 0.55;
+  opacity: 0.35;
   animation:
     blob-morph-a 18s ease-in-out infinite alternate,
     blob-drift-a 26s ease-in-out infinite alternate;
@@ -142,10 +203,17 @@ body::after {
       rgba(247, 220, 111, 0.7),
       transparent 70%
     );
-  opacity: 0.5;
+  opacity: 0.3;
   animation:
     blob-morph-b 22s ease-in-out infinite alternate,
     blob-drift-b 30s ease-in-out infinite alternate;
+}
+
+[data-theme="dark"] body::before {
+  opacity: 0.55;
+}
+[data-theme="dark"] body::after {
+  opacity: 0.5;
 }
 
 @keyframes blob-morph-a {
@@ -187,7 +255,6 @@ body::after {
   }
 }
 
-/* Content sits above the blobs (modals keep their own fixed stacking) */
 .container {
   max-width: 800px;
   margin: 0 auto;
@@ -196,7 +263,7 @@ body::after {
 }
 
 /* ------------------------------------------------------------
-   Header controls — frosted glass chips
+   Header controls
    ------------------------------------------------------------ */
 .header-controls {
   display: flex;
@@ -211,31 +278,29 @@ body::after {
   padding: 0.8rem 1.15rem;
   border-radius: 16px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   touch-action: manipulation;
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--lg-shadow);
   transition:
     transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.45s ease,
     border-color 0.45s ease,
     box-shadow 0.45s ease;
 }
+[data-theme="dark"] .btn {
+  box-shadow: var(--lg-shadow);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
 .btn:hover {
   background: var(--lg-glass-strong);
   border-color: rgba(255, 107, 107, 0.55);
   transform: translateY(-2px);
-  box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.35),
-    0 0 24px rgba(255, 107, 107, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: var(--lg-shadow-hover);
 }
 .btn:active {
   transform: translateY(0);
@@ -243,7 +308,7 @@ body::after {
 }
 
 /* ------------------------------------------------------------
-   Search — large iridescent glass field
+   Search field
    ------------------------------------------------------------ */
 .search-box {
   margin-bottom: 1.5rem;
@@ -260,13 +325,14 @@ body::after {
   background: var(--lg-glass);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: var(--lg-shadow-search);
   transition:
     border-color 0.45s ease,
     box-shadow 0.45s ease,
     background-color 0.45s ease;
+}
+[data-theme="dark"] .search-box input {
+  box-shadow: var(--lg-shadow-search);
 }
 .search-box input::placeholder {
   color: var(--lg-text-faint);
@@ -275,34 +341,35 @@ body::after {
   border-color: var(--lg-teal);
   background: var(--lg-glass-strong);
   box-shadow:
-    0 0 0 3px rgba(78, 205, 196, 0.28),
-    0 0 28px rgba(78, 205, 196, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    0 0 0 3px rgba(78, 205, 196, 0.35),
+    0 0 20px rgba(78, 205, 196, 0.2);
 }
 
 /* ------------------------------------------------------------
-   Cards — frosted glass panels with iridescent hover
+   Cards
    ------------------------------------------------------------ */
 .card {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.13),
-    rgba(255, 255, 255, 0.05)
-  );
+  background: var(--lg-glass);
   backdrop-filter: blur(22px) saturate(160%);
   -webkit-backdrop-filter: blur(22px) saturate(160%);
   border: 1px solid var(--lg-border);
   border-radius: 20px;
   margin-bottom: 0.75rem;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow: var(--lg-shadow);
   overflow: hidden;
   transition:
     transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.5s ease,
     border-color 0.5s ease;
   animation: card-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+[data-theme="dark"] .card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.13),
+    rgba(255, 255, 255, 0.05)
+  );
+  box-shadow: var(--lg-shadow-strong);
 }
 @keyframes card-rise {
   from {
@@ -316,7 +383,12 @@ body::after {
 }
 .card:hover {
   transform: translateY(-3px);
-  border-color: rgba(78, 205, 196, 0.45);
+  border-color: rgba(78, 205, 196, 0.65);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.1),
+    0 0 20px rgba(78, 205, 196, 0.15);
+}
+[data-theme="dark"] .card:hover {
   box-shadow:
     0 14px 40px rgba(0, 0, 0, 0.45),
     0 0 0 1px rgba(255, 107, 107, 0.3),
@@ -336,6 +408,9 @@ body::after {
   transition: background-color 0.4s ease;
 }
 .card-header:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+[data-theme="dark"] .card-header:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 .card-info {
@@ -344,6 +419,14 @@ body::after {
 .sku-title {
   font-weight: 700;
   margin-bottom: 0.25rem;
+  background: linear-gradient(120deg, #c026d3, #d97706, #0d9488);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  text-shadow: none;
+}
+[data-theme="dark"] .sku-title {
   background: linear-gradient(
     120deg,
     var(--lg-coral),
@@ -352,43 +435,43 @@ body::after {
   );
   -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  text-shadow: none;
 }
+
 .tab-preview {
   font-size: 0.875rem;
   color: var(--lg-text-soft);
 }
 .btn-link {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.05);
   color: var(--lg-text);
   border: 1px solid var(--lg-border);
   padding: 0.55rem 1rem;
   border-radius: 12px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
   margin-left: 1rem;
   touch-action: manipulation;
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: var(--lg-shadow-inset);
   transition:
     background-color 0.4s ease,
     border-color 0.4s ease,
     box-shadow 0.4s ease,
     transform 0.4s ease;
 }
+[data-theme="dark"] .btn-link {
+  background: rgba(255, 255, 255, 0.08);
+}
 .btn-link:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.1);
   border-color: rgba(255, 107, 107, 0.6);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 0 18px rgba(255, 107, 107, 0.3);
   transform: translateY(-1px);
 }
+[data-theme="dark"] .btn-link:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
 
-/* Accordion: animate only the grid row track (cheap, no full-list reflow) */
 .card-body {
   display: grid;
   grid-template-rows: 0fr;
@@ -401,27 +484,24 @@ body::after {
   overflow: hidden;
   min-height: 0;
   padding: 0 1rem;
-  /* Secondary price groups (e.g. Online vs Offline) render side-by-side */
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0 1.25rem;
 }
 .card.expanded .card-body {
   grid-template-rows: 1fr;
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid var(--lg-border);
 }
 .card.expanded .card-body-inner {
   padding: 1rem;
 }
 
-/* When only one group is present (e.g. DETAILS active), keep it full width
-   in the first column instead of squeezing into half a row. */
 .group:only-child {
   grid-column: 1 / -1;
 }
 .group {
   margin-bottom: 1rem;
-  min-width: 0; /* allow long column values to wrap inside the grid cell */
+  min-width: 0;
 }
 .group:last-child {
   margin-bottom: 0;
@@ -433,7 +513,7 @@ body::after {
   color: var(--lg-text-soft);
   margin-bottom: 0.5rem;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 1px solid var(--lg-border);
   padding-bottom: 0.25rem;
 }
 .group .spec-grid {
@@ -454,22 +534,18 @@ body::after {
 }
 
 /* ------------------------------------------------------------
-   Load more — iridescent gradient glass pill
+   Load more
    ------------------------------------------------------------ */
 .load-more {
   display: none;
   margin: 1rem auto 0;
   padding: 0.85rem 2rem;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 107, 107, 0.85),
-    rgba(187, 143, 206, 0.85)
-  );
+  background: linear-gradient(135deg, #ff6b6b, #bb8fce);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 999px;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 1rem;
   width: 100%;
   max-width: 400px;
@@ -477,23 +553,17 @@ body::after {
   backdrop-filter: blur(14px) saturate(150%);
   -webkit-backdrop-filter: blur(14px) saturate(150%);
   box-shadow:
-    0 10px 32px rgba(0, 0, 0, 0.35),
-    0 0 24px rgba(255, 107, 107, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    0 6px 20px rgba(255, 107, 107, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   transition:
     transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.45s ease,
     filter 0.45s ease;
 }
 .load-more:hover {
-  filter: brightness(1.12);
+  filter: brightness(1.08);
   transform: translateY(-2px);
-  box-shadow:
-    0 14px 40px rgba(0, 0, 0, 0.45),
-    0 0 36px rgba(255, 107, 107, 0.45),
-    0 0 36px rgba(187, 143, 206, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: 0 10px 24px rgba(255, 107, 107, 0.35);
 }
 .load-more:active {
   transform: translateY(0);
@@ -501,14 +571,13 @@ body::after {
 }
 
 /* ------------------------------------------------------------
-   Loading — pulsing glass text
+   Loading Indicator
    ------------------------------------------------------------ */
 #loading {
   text-align: center;
   padding: 2rem;
   color: var(--lg-text);
-  font-weight: 500;
-  text-shadow: 0 0 16px rgba(78, 205, 196, 0.6);
+  font-weight: 600;
   animation: loading-pulse 1.6s ease-in-out infinite;
 }
 @keyframes loading-pulse {
@@ -522,7 +591,7 @@ body::after {
 }
 
 /* ------------------------------------------------------------
-   MODALS — liquid glass panels (Category + Tabs)
+   Modals
    ------------------------------------------------------------ */
 .modal {
   display: none;
@@ -531,13 +600,16 @@ body::after {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(10, 14, 30, 0.55);
+  background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
   z-index: 50;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+}
+[data-theme="dark"] .modal {
+  background: rgba(10, 14, 30, 0.75);
 }
 .modal.active {
   display: flex;
@@ -549,20 +621,26 @@ body::after {
   display: flex;
   flex-direction: column;
   color: var(--lg-text);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.16),
-    rgba(255, 255, 255, 0.07)
-  );
+  background: var(--lg-glass-strong);
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
   border: 1px solid var(--lg-border);
   border-radius: 24px;
   padding: 1.5rem;
   box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  animation: modal-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+[data-theme="dark"] .modal-content {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.22),
+    rgba(255, 255, 255, 0.11)
+  );
+  box-shadow:
     0 24px 64px rgba(0, 0, 0, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  animation: modal-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes modal-in {
   from {
@@ -579,7 +657,7 @@ body::after {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  flex-shrink: 0; /* pinned — never squeezed by the scrolling list */
+  flex-shrink: 0;
 }
 .modal-header h3 {
   margin: 0;
@@ -592,8 +670,8 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--lg-border);
   border-radius: 999px;
   font-size: 1.25rem;
   line-height: 1;
@@ -606,14 +684,16 @@ body::after {
     box-shadow 0.3s ease,
     transform 0.3s ease;
 }
+[data-theme="dark"] .close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
 .close-btn:hover {
   background: rgba(255, 107, 107, 0.2);
   border-color: rgba(255, 107, 107, 0.55);
-  box-shadow: 0 0 16px rgba(255, 107, 107, 0.35);
   transform: rotate(90deg);
 }
 
-/* Category Grid — glass search + tiles, scrolls inside the panel */
 .cat-search {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -624,31 +704,32 @@ body::after {
   font-size: 0.95rem;
   color: var(--lg-text);
   outline: none;
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  flex-shrink: 0; /* pinned — never squeezed by the scrolling list */
+  background: var(--lg-glass);
+  box-shadow: var(--lg-shadow-inset);
+  flex-shrink: 0;
   transition:
     border-color 0.35s ease,
     box-shadow 0.35s ease,
     background-color 0.35s ease;
+}
+[data-theme="dark"] .cat-search {
+  background: rgba(255, 255, 255, 0.08);
 }
 .cat-search::placeholder {
   color: var(--lg-text-faint);
 }
 .cat-search:focus {
   border-color: var(--lg-teal);
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.9);
   box-shadow:
     0 0 0 3px rgba(78, 205, 196, 0.25),
-    0 0 18px rgba(78, 205, 196, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 0 18px rgba(78, 205, 196, 0.2);
 }
+
 #cat-grid {
   display: grid;
   gap: 0.5rem;
   overflow-y: auto;
-  /* Flex fix: allow the grid to shrink and scroll inside the panel
-     instead of overflowing the rounded corners on short screens. */
   flex: 1 1 auto;
   min-height: 0;
   padding-right: 0.25rem;
@@ -656,11 +737,12 @@ body::after {
 .cat-item {
   padding: 0.75rem 0.5rem;
   text-align: center;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--lg-glass);
+  border: 1px solid var(--lg-border);
   border-radius: 14px;
   cursor: pointer;
   font-size: 0.875rem;
+  font-weight: 500;
   color: var(--lg-text);
   white-space: nowrap;
   overflow: hidden;
@@ -673,34 +755,28 @@ body::after {
     box-shadow 0.3s ease,
     transform 0.3s ease;
 }
+[data-theme="dark"] .cat-item {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
 .cat-item.active {
-  background: linear-gradient(
-    135deg,
-    var(--lg-coral),
-    var(--lg-purple),
-    var(--lg-teal)
-  );
-  border-color: rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg, #ff6b6b, #bb8fce, #4ecdc4);
+  border-color: rgba(255, 255, 255, 0.8);
   color: white;
   font-weight: 600;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  box-shadow:
-    0 8px 24px rgba(255, 107, 107, 0.35),
-    0 0 16px rgba(187, 143, 206, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
 }
 .cat-item:hover:not(.active) {
-  background: rgba(255, 255, 255, 0.13);
-  border-color: rgba(78, 205, 196, 0.5);
+  background: var(--lg-glass-strong);
+  border-color: var(--lg-teal);
   transform: translateY(-1px);
 }
 
-/* Options Modal — glass radio tiles */
+/* Options Modal */
 .radio-group {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  /* Flex fix: same shrink-and-scroll behavior as the category grid */
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -712,19 +788,24 @@ body::after {
   gap: 0.75rem;
   cursor: pointer;
   font-size: 1rem;
+  font-weight: 500;
   color: var(--lg-text);
   padding: 0.85rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--lg-border);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--lg-glass);
   transition:
     background-color 0.3s ease,
     border-color 0.3s ease,
     transform 0.3s ease;
 }
+[data-theme="dark"] .radio-label {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.07);
+}
 .radio-label:hover {
-  background: rgba(255, 255, 255, 0.13);
-  border-color: rgba(78, 205, 196, 0.5);
+  background: var(--lg-glass-strong);
+  border-color: var(--lg-teal);
   transform: translateY(-1px);
 }
 .radio-label input {
@@ -735,7 +816,6 @@ body::after {
   flex-shrink: 0;
 }
 
-/* Thin scrollbars inside modal panels (override the 20px page bar) */
 #cat-grid::-webkit-scrollbar,
 .radio-group::-webkit-scrollbar {
   width: 8px !important;
@@ -750,17 +830,15 @@ body::after {
 }
 #cat-grid::-webkit-scrollbar-track,
 .radio-group::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--lg-ink-2);
   border-radius: 999px;
 }
 #cat-grid,
 .radio-group {
   scrollbar-width: thin;
-  scrollbar-color: var(--lg-teal) rgba(255, 255, 255, 0.06);
+  scrollbar-color: var(--lg-teal) var(--lg-ink-2);
 }
 
-/* Image Modal — keeps its transparent white preview style; neutralize
-   the new glass panel border so it looks identical to before */
 #img-modal-content {
   width: fit-content;
   max-width: 90vw;
@@ -780,14 +858,11 @@ body::after {
 }
 #img-loading {
   display: none;
-  color: white;
+  color: var(--lg-text);
   font-weight: 500;
   padding: 1rem;
 }
 
-/* ------------------------------------------------------------
-   Wide screens: multi-column grid, sized to large displays
-   ------------------------------------------------------------ */
 @media (min-width: 900px) {
   .container {
     max-width: 1400px;
@@ -802,8 +877,6 @@ body::after {
   }
 }
 
-/* Respect users who prefer reduced motion: no morphing blobs,
-   no entrance animations, instant expand/collapse */
 @media (prefers-reduced-motion: reduce) {
   body::before,
   body::after {

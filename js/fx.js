@@ -30,55 +30,77 @@
     return v === 0 || v === 1 || v === 2 ? v : fallback;
   };
 
-  // Auto-eco: heavy effects downgrade to level 2 on constrained networks
+  // Auto-eco: heavy effects downgrade to level 2 on constrained networks.
+  // Forced to level 0 (OFF) on extremely slow 2G connections.
   const conn =
     navigator.connection ||
     navigator.mozConnection ||
     navigator.webkitConnection;
+  const effectiveType = conn ? conn.effectiveType || "" : "";
   const slowNetwork =
-    !!conn &&
-    (conn.saveData === true ||
-      (conn.effectiveType && /^(slow-2g|2g|3g)$/.test(conn.effectiveType)));
+    !!conn && (conn.saveData === true || /^(slow-2g|2g|3g)$/.test(effectiveType));
+  const verySlowNetwork = /^(slow-2g|2g)$/.test(effectiveType);
 
   const level = (key, fallback) => {
     const l = readLevel(key, fallback);
+    if (verySlowNetwork && !(key in CHEAP_KEYS)) return 0;
     if (slowNetwork && !(key in CHEAP_KEYS)) return l === 0 ? 0 : 2;
     return l;
   };
+
+  // Helper: add !important to all CSS declarations in a rule string
+  const addImportant = (css) =>
+    css.replace(/([^;{}]+):([^;{}]+);?/g, (m, p, v) => {
+      const tp = p.trim(), tv = v.trim();
+      if (!tp || tp.startsWith("/*") || tv.includes("!important")) return m;
+      return `${tp}: ${tv} !important;`;
+    });
+
+  // Helper: replace hardcoded colors with CSS variables where applicable
+  const themeAware = (css) =>
+    css
+      .replace(/background:#0b1020/g, "background:var(--lg-ink)")
+      .replace(/background:#1a223f/g, "background:var(--lg-glass)")
+      .replace(/background:#182040/g, "background:var(--lg-glass-strong)")
+      .replace(/background:#10172f/g, "background:var(--lg-ink-panel)")
+      .replace(/background:rgba\(6,9,20,0\.95\)/g, "background:var(--lg-ink)")
+      .replace(/background:#1a2245/g, "background:var(--lg-glass-strong)")
+      .replace(/background:rgba\(255,255,255,0\.15\)/g, "background:var(--lg-glass)")
+      .replace(/background:rgba\(255,255,255,0\.13\)/g, "background:var(--lg-glass)")
+      .replace(/background:rgba\(255,255,255,0\.1\)/g, "background:var(--lg-glass)")
+      .replace(/background:rgba\(8,12,26,0\.55\)/g, "background:var(--lg-ink-panel)")
+      .replace(/background:rgba\(10,14,30,0\.82\)/g, "background:var(--lg-ink)")
+      .replace(
+        /background:linear-gradient\(135deg,rgba\(255,255,255,0\.22\),rgba\(255,255,255,0\.11\)\)/g,
+        "background:linear-gradient(135deg,var(--lg-glass),var(--lg-glass-strong))"
+      )
+      .replace(/rgba\(78,205,196,0\.7\)/g, "var(--lg-teal)")
+      .replace(/#4ecdc4/g, "var(--lg-teal)")
+      .replace(/rgba\(255,255,255,0\.06\)/g, "var(--lg-ink-2)")
+      .replace(/-webkit-text-fill-color:#fff/g, "-webkit-text-fill-color:var(--lg-text)")
+      .replace(/color:#fff/g, "color:var(--lg-text)");
 
   // ------------------------------------------------------------
   // Level 0 rules — completely flat (no blur, glow, shadow, motion)
   // ------------------------------------------------------------
   const LEVEL0 = {
-    backgroundFixed: "body{background:#0b1020;background-attachment:scroll}",
+    backgroundFixed: "body{background:var(--lg-ink);background-attachment:scroll}",
     backgroundBlobs: "body::before,body::after{display:none}",
     blobAnimation: "body::before,body::after{animation:none}",
-    backdropBlurButtons:
-      ".btn,.btn-link{backdrop-filter:none;-webkit-backdrop-filter:none;background:#1a223f}",
-    backdropBlurSearch:
-      ".search-box input{backdrop-filter:none;-webkit-backdrop-filter:none;background:#1a223f}",
-    backdropBlurCards:
-      ".card{background:#182040;backdrop-filter:none;-webkit-backdrop-filter:none}.card-body{background:#10172f;backdrop-filter:none;-webkit-backdrop-filter:none}",
-    backdropBlurModal:
-      ".modal{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(6,9,20,.95)}",
-    panelBlurModal:
-      ".modal-content{backdrop-filter:none;-webkit-backdrop-filter:none;background:#1a2245}",
-    glowHover:
-      ".btn:hover,.btn-link:hover,.card:hover,.cat-item:hover:not(.active),.radio-label:hover{box-shadow:none;filter:none}",
-    glowActive:
-      ".cat-item.active,.close-btn,.close-btn:hover{box-shadow:none;filter:none}",
-    glowFocus:
-      ".search-box input:focus,.cat-search:focus{border-color:var(--lg-teal);box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}",
+    backdropBlurButtons: ".btn,.btn-link{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--lg-glass)}",
+    backdropBlurSearch: ".search-box input{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--lg-glass)}",
+    backdropBlurCards: ".card{background:var(--lg-glass-strong);backdrop-filter:none;-webkit-backdrop-filter:none}.card-body{background:var(--lg-ink-panel);backdrop-filter:none;-webkit-backdrop-filter:none}",
+    backdropBlurModal: ".modal{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--lg-ink)}",
+    panelBlurModal: ".modal-content{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--lg-glass-strong)}",
+    glowHover: ".btn:hover,.btn-link:hover,.card:hover,.cat-item:hover:not(.active),.radio-label:hover{box-shadow:none;filter:none}",
+    glowActive: ".cat-item.active,.close-btn,.close-btn:hover{box-shadow:none;filter:none}",
+    glowFocus: ".search-box input:focus,.cat-search:focus{border-color:var(--lg-teal);box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}",
     glowLoadMore: ".load-more,.load-more:hover{box-shadow:none;filter:none}",
-    glowText: "#loading,.btn,.load-more,.cat-item.active{text-shadow:none}",
-    shadowDepth:
-      ".btn,.search-box input,.card,.card-body,.btn-link,.load-more,.modal-content,.cat-item,.close-btn{box-shadow:none}",
+    shadowDepth: ".btn,.search-box input,.card,.card-body,.btn-link,.load-more,.modal-content,.cat-item,.close-btn{box-shadow:none}",
     entranceAnimations: ".card,.modal-content{animation:none}",
     loadingPulse: "#loading{animation:none}",
-    transitionEase:
-      ".btn,.search-box input,.card,.card-body,.card-header,.btn-link,.load-more,.close-btn,.cat-search,.cat-item,.radio-label{transition:none}",
-    scrollbarStyle:
-      "::-webkit-scrollbar{width:8px !important;height:8px !important}::-webkit-scrollbar-thumb{background:#4ecdc4;border:2px solid transparent;background-clip:padding-box;border-radius:999px}::-webkit-scrollbar-track{background:rgba(255,255,255,.06);box-shadow:none}*{scrollbar-width:thin;scrollbar-color:#4ecdc4 rgba(255,255,255,.06)}",
+    transitionEase: ".btn,.search-box input,.card,.card-body,.card-header,.btn-link,.load-more,.close-btn,.cat-search,.cat-item,.radio-label{transition:none}",
+    scrollbarStyle: "::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--lg-teal);border:2px solid transparent;background-clip:padding-box;border-radius:999px}::-webkit-scrollbar-track{background:var(--lg-ink-2);box-shadow:none}*{scrollbar-width:thin;scrollbar-color:var(--lg-teal) var(--lg-ink-2)}",
   };
 
   // ------------------------------------------------------------
@@ -92,32 +114,35 @@
       "body::before,body::after{width:34vw;height:34vw;max-width:360px;max-height:360px;filter:blur(8px);opacity:.14}",
     blobAnimation: "body::before,body::after{animation:none}",
     backdropBlurButtons:
-      ".btn,.btn-link{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(255,255,255,.15)}",
+      ".btn,.btn-link{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--lg-glass)}",
     backdropBlurSearch:
-      ".search-box input{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(255,255,255,.13)}",
+      ".search-box input{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--lg-glass)}",
     backdropBlurCards:
-      ".card{background:rgba(255,255,255,.1);backdrop-filter:none;-webkit-backdrop-filter:none}.card-body{background:rgba(8,12,26,.55);backdrop-filter:none;-webkit-backdrop-filter:none}",
+      ".card{background:var(--lg-glass);backdrop-filter:none;-webkit-backdrop-filter:none}.card-body{background:var(--lg-ink-panel);backdrop-filter:none;-webkit-backdrop-filter:none}",
     backdropBlurModal:
-      ".modal{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(10,14,30,.82)}",
+      ".modal{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--lg-ink)}",
     panelBlurModal:
-      ".modal-content{backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(135deg,rgba(255,255,255,.22),rgba(255,255,255,.11))}",
+      ".modal-content{backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(135deg,var(--lg-glass),var(--lg-glass-strong))}",
     glowHover:
-      ".btn:hover,.btn-link:hover{box-shadow:0 8px 20px rgba(0,0,0,.3);filter:none}.card:hover{box-shadow:0 12px 28px rgba(0,0,0,.4);filter:none}.cat-item:hover:not(.active),.radio-label:hover{box-shadow:0 4px 12px rgba(0,0,0,.25);filter:none}",
+      ".btn:hover,.btn-link:hover{box-shadow:var(--lg-shadow-hover);filter:none}.card:hover{box-shadow:var(--lg-shadow-hover);filter:none}.cat-item:hover:not(.active),.radio-label:hover{box-shadow:var(--lg-shadow-hover);filter:none}",
     glowActive:
-      ".cat-item.active{box-shadow:0 4px 12px rgba(0,0,0,.3);filter:none}.close-btn:hover{box-shadow:none;filter:none}",
+      ".cat-item.active{box-shadow:var(--lg-shadow-hover);filter:none}.close-btn:hover{box-shadow:none;filter:none}",
     glowFocus:
-      ".search-box input:focus,.cat-search:focus{box-shadow:0 0 0 1px rgba(78,205,196,.7),inset 0 1px 0 rgba(255,255,255,.2)}",
+      ".search-box input:focus,.cat-search:focus{box-shadow:0 0 0 1px var(--lg-teal),inset 0 1px 0 rgba(255,255,255,.2)}",
     glowLoadMore:
-      ".load-more{box-shadow:0 6px 20px rgba(0,0,0,.3);filter:none}.load-more:hover{filter:none;box-shadow:0 8px 24px rgba(0,0,0,.35)}",
-    glowText: "#loading,.btn,.load-more,.cat-item.active{text-shadow:none}",
+      ".load-more{box-shadow:var(--lg-shadow-hover);filter:none}.load-more:hover{filter:none;box-shadow:var(--lg-shadow-hover)}",
     shadowDepth:
-      ".btn{box-shadow:0 4px 14px rgba(0,0,0,.22)}.search-box input{box-shadow:0 4px 16px rgba(0,0,0,.22)}.card{box-shadow:0 4px 16px rgba(0,0,0,.3)}.modal-content{box-shadow:0 12px 32px rgba(0,0,0,.45)}",
-    entranceAnimations: ".card,.modal-content{animation:none}",
-    loadingPulse: "#loading{animation:none}",
+      ".btn{box-shadow:var(--lg-shadow)}.search-box input{box-shadow:var(--lg-shadow-search)}.card{box-shadow:var(--lg-shadow)}.modal-content{box-shadow:var(--lg-shadow-strong)}",
     transitionEase:
       ".btn{transition:transform .2s ease,background-color .2s ease,border-color .2s ease}.search-box input{transition:border-color .2s ease,background-color .2s ease}.card{transition:transform .2s ease,border-color .2s ease}.card-body{transition:grid-template-rows .2s ease}.card-header{transition:background-color .2s ease}.btn-link{transition:background-color .2s ease,border-color .2s ease,transform .2s ease}.load-more{transition:transform .2s ease}.close-btn{transition:background-color .2s ease,border-color .2s ease,transform .2s ease}.cat-search{transition:border-color .2s ease,background-color .2s ease}.cat-item,.radio-label{transition:background-color .2s ease,border-color .2s ease,transform .2s ease}",
+  };
+
+  // Shared rules (same in LEVEL0 and LEVEL2) - defined once
+  const SHARED = {
+    entranceAnimations: ".card,.modal-content{animation:none}",
+    loadingPulse: "#loading{animation:none}",
     scrollbarStyle:
-      "::-webkit-scrollbar{width:8px !important;height:8px !important}::-webkit-scrollbar-thumb{background:#4ecdc4;border:2px solid transparent;background-clip:padding-box;border-radius:999px}::-webkit-scrollbar-track{background:rgba(255,255,255,.06);box-shadow:none}*{scrollbar-width:thin;scrollbar-color:#4ecdc4 rgba(255,255,255,.06)}",
+      "::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--lg-teal);border:2px solid transparent;background-clip:padding-box;border-radius:999px}::-webkit-scrollbar-track{background:var(--lg-ink-2);box-shadow:none}*{scrollbar-width:thin;scrollbar-color:var(--lg-teal) var(--lg-ink-2)}",
   };
 
   // Cheap effects — full at 1 (default), off only when set to 0
@@ -125,7 +150,7 @@
     hoverLift:
       ".btn:hover,.card:hover,.btn-link:hover,.load-more:hover,.cat-item:hover:not(.active),.radio-label:hover{transform:none}",
     textGradient:
-      ".sku-title{background:none;-webkit-background-clip:initial;background-clip:initial;-webkit-text-fill-color:#fff;color:#fff;text-shadow:none}",
+      ".sku-title{background:none;-webkit-background-clip:initial;background-clip:initial;-webkit-text-fill-color:var(--lg-text);color:var(--lg-text);text-shadow:none}",
   };
 
   // ------------------------------------------------------------
@@ -137,11 +162,26 @@
   const HEAVY_KEYS = Object.keys(LEVEL2);
   for (const key of HEAVY_KEYS) {
     const l = level(key, 2);
-    if (l === 0 && LEVEL0[key]) css += LEVEL0[key] + "\n";
-    else if (l === 2 && LEVEL2[key]) css += LEVEL2[key] + "\n";
+    let rule = "";
+    if (l === 0 && LEVEL0[key]) rule = LEVEL0[key];
+    else if (l === 2 && LEVEL2[key]) rule = LEVEL2[key];
+    // Level 1 = no override (baseline styles.css applies)
+    if (rule) css += themeAware(addImportant(rule)) + "\n";
   }
+
+  // Process shared keys (same at level 0 and 2)
+  for (const key of Object.keys(SHARED)) {
+    const l = level(key, 2);
+    if (l === 0 || l === 2) {
+      css += themeAware(addImportant(SHARED[key])) + "\n";
+    }
+  }
+
+  // Process cheap keys (only react to explicit level 0)
   for (const key of Object.keys(CHEAP)) {
-    if (level(key, 1) === 0) css += CHEAP[key] + "\n";
+    if (level(key, 1) === 0) {
+      css += themeAware(addImportant(CHEAP[key])) + "\n";
+    }
   }
 
   const style = document.createElement("style");

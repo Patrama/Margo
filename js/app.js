@@ -30,7 +30,7 @@ let imgLoadTimer = null;
 // Init
 // ------------------------------------------------------------
 function init() {
-  injectConfigStyles();
+  initTheme();
   applyTexts();
   loadCache();
   renderOptions();
@@ -49,23 +49,6 @@ function init() {
     fetchCSV(true);
   } else {
     fetchCSV(false);
-  }
-}
-
-// ------------------------------------------------------------
-// Config styles (injected from CONFIG.js into <head>)
-// ------------------------------------------------------------
-function injectConfigStyles() {
-  const styles = CONFIG.styles;
-  if (!styles) return;
-  let cssText = "";
-  Object.values(styles).forEach((css) => {
-    cssText += css + "\n";
-  });
-  if (cssText) {
-    const styleEl = document.createElement("style");
-    styleEl.textContent = cssText;
-    document.head.appendChild(styleEl);
   }
 }
 
@@ -141,6 +124,30 @@ function saveCache() {
       activeTab: state.activeTab,
     }),
   );
+}
+
+// ------------------------------------------------------------
+// Theme Management
+// ------------------------------------------------------------
+function initTheme() {
+  const saved = localStorage.getItem("theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const theme = saved || (prefersDark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+  updateThemeIcon(theme);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || "light";
+  const next = current === "light" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("theme", next);
+  updateThemeIcon(next);
+}
+
+function updateThemeIcon(theme) {
+  const btn = document.getElementById("theme-toggle");
+  if (btn) btn.textContent = theme === "light" ? "🌙" : "☀️";
 }
 
 // ------------------------------------------------------------
