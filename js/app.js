@@ -200,10 +200,13 @@ async function fetchCSV(fromCache) {
   );
   try {
     // CHANGE THIS LINE: Use absolute URL with CONFIG.apiBaseUrl
-    const res = await fetch(`${CONFIG.apiBaseUrl}/api/catalog`, {
-      cache: "force-cache",
-      signal: controller.signal,
-    });
+    const res = await fetch(
+      `${CONFIG.apiBaseUrl.replace(/\/+$/, "")}/api/catalog`,
+      {
+        cache: "force-cache",
+        signal: controller.signal,
+      },
+    );
     const text = await res.text();
     const { data, categories } = parseCSV(text);
     // ... rest of function remains identical
