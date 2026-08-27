@@ -63,9 +63,8 @@ const CONFIG = {
   // postal code live server-side only, in Vercel env vars read by
   // /api/rates.js (BITESHIP_API_KEY, BITESHIP_ORIGIN_POSTAL_CODE).
   // ------------------------------------------------------------
+  // Shipment Price Check configuration updates
   shipCheck: {
-    // Courier checkboxes shown in the modal. `code` must match a
-    // Biteship courier code (see Biteship's Courier API).
     couriers: [
       { code: "jne", label: "JNE" },
       { code: "jnt", label: "J&T" },
@@ -74,6 +73,13 @@ const CONFIG = {
       { code: "ninja", label: "Ninja Xpress" },
     ],
     defaultWeight: 1000, // grams
+    defaultOriginPostalCode: "", // Optional default shop postal code
+  },
+
+  texts: {
+    // ...
+    shipCheckOriginLabel: "Shop Postal Code",
+    shipCheckInvalidOrigin: "Enter a valid shop postal code",
   },
 
   // Rename raw CSV column headers for display

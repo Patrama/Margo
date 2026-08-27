@@ -2,17 +2,113 @@
 
 // ============================================================
 // ship-check-app.js — "Shipment Price Check" modal
-// ------------------------------------------------------------
-// Separate from app.js/CONFIG.js by design. Talks to /api/rates (a
-// Vercel serverless function) instead of Biteship directly, so the
-// Biteship API key and the shop's origin postal code never appear in
-// client-visible code.
-//
-// Reuses openModal()/closeModal() from app.js — this script is loaded
-// after app.js in index.html, so those globals already exist.
 // ============================================================
 
 (function () {
+  // ============================================================
+  // 1. Shop Location State & Search Logic
+  // ============================================================
+  let selectedShopLocation = null; // Single selection: { name, postal }
+  let shopLocations = []; // Populated from CSV or Config
+
+  function filterShopLocations(query) {
+    if (!query) return [];
+    const q = query.toLowerCase();
+    return shopLocations.filter(
+      (loc) => loc.name.toLowerCase().includes(q) || loc.postal.includes(q),
+    );
+  }
+
+  function selectShopLocation(loc) {
+    selectedShopLocation = loc;
+    renderShopLocationChip();
+
+    // Automatically update the input value if present
+    const originInput = document.getElementById("ship-origin");
+    if (originInput && loc) {
+      originInput.value = loc.postal;
+    }
+  }
+
+  window.removeShopLocation = function () {
+    selectedShopLocation = null;
+    renderShopLocationChip();
+  };
+
+  function renderShopLocationChip() {
+    const container = document.getElementById("shop-location-chip-container");
+    if (!container) return;
+
+    if (!selectedShopLocation) {
+      container.innerHTML = "";
+      return;
+    }
+
+    container.innerHTML = `
+      <span class="chip single-chip">
+        📍 ${escapeHtmlLocal(selectedShopLocation.name)} (${escapeHtmlLocal(selectedShopLocation.postal)})
+        <button type="button" class="chip-remove" onclick="window.removeShopLocation()">&times;</button>
+      </span>
+    `;
+  }
+
+  // ============================================================
+  // 2. Courier Chips State & Search Logic
+  // ============================================================
+  let selectedCouriers = []; // Stores selected courier objects [{code, label}]
+  let availableCouriers = []; // Populated from CSV or Config
+
+  function filterCouriers(query) {
+    if (!query) return [];
+    const q = query.toLowerCase();
+    return availableCouriers.filter(
+      (c) =>
+        c.label.toLowerCase().startsWith(q) ||
+        c.code.toLowerCase().startsWith(q),
+    );
+  }
+
+  function selectCourier(courier) {
+    const maxLimit =
+      window.CONFIG && CONFIG.MAX_COURIER_PICK === "max"
+        ? Infinity
+        : (window.CONFIG && CONFIG.MAX_COURIER_PICK) || Infinity;
+
+    if (selectedCouriers.length >= maxLimit) {
+      alert(`Maximum limit of ${maxLimit} couriers reached.`);
+      return;
+    }
+
+    if (!selectedCouriers.some((c) => c.code === courier.code)) {
+      selectedCouriers.push(courier);
+      renderCourierChips();
+    }
+  }
+
+  window.removeCourier = function (code) {
+    selectedCouriers = selectedCouriers.filter((c) => c.code !== code);
+    renderCourierChips();
+  };
+
+  function renderCourierChips() {
+    const container = document.getElementById("courier-chips-container");
+    if (!container) return;
+
+    container.innerHTML = selectedCouriers
+      .map(
+        (c) => `
+      <span class="chip">
+        ${escapeHtmlLocal(c.label)}
+        <button type="button" class="chip-remove" onclick="window.removeCourier('${escapeAttr(c.code)}')">&times;</button>
+      </span>
+    `,
+      )
+      .join("");
+  }
+
+  // ============================================================
+  // 3. UI Helpers & Internationalization
+  // ============================================================
   function applyShipCheckTexts() {
     const t = (window.CONFIG && CONFIG.texts) || {};
 
@@ -29,6 +125,10 @@
     const weightLabel = document.querySelector('label[for="ship-weight"]');
     if (weightLabel && t.shipCheckWeightLabel)
       weightLabel.textContent = t.shipCheckWeightLabel;
+
+    const originLabel = document.querySelector('label[for="ship-origin"]');
+    if (originLabel && t.shipCheckOriginLabel)
+      originLabel.textContent = t.shipCheckOriginLabel;
 
     const couriersLabel = document.getElementById("ship-check-couriers-label");
     if (couriersLabel && t.shipCheckCouriersLabel)
@@ -66,10 +166,18 @@
     ) {
       weightInput.value = CONFIG.shipCheck.defaultWeight;
     }
+
+    const originInput = document.getElementById("ship-origin");
+    if (
+      originInput &&
+      window.CONFIG &&
+      CONFIG.shipCheck &&
+      CONFIG.shipCheck.defaultOriginPostalCode
+    ) {
+      originInput.value = CONFIG.shipCheck.defaultOriginPostalCode;
+    }
   }
 
-  // Local, dependency-free escaping (mirrors app.js's escapeHtml, but this
-  // file is meant to work standalone even if app.js's helper changes).
   function escapeHtmlLocal(str) {
     return String(str).replace(/[&<>"']/g, (c) => "&#" + c.charCodeAt(0) + ";");
   }
@@ -129,17 +237,28 @@
       .join("");
   }
 
+  // ============================================================
+  // 4. Form Submission Logic
+  // ============================================================
   async function handleSubmit(e) {
     e.preventDefault();
 
     const t = (window.CONFIG && CONFIG.texts) || {};
     const destInput = document.getElementById("ship-dest");
     const weightInput = document.getElementById("ship-weight");
+    const originInput = document.getElementById("ship-origin");
     const submitBtn = document.querySelector(".ship-check-submit");
     const results = document.getElementById("ship-check-results");
 
     const destination_postal_code = (destInput.value || "").trim();
     const weight = Number(weightInput.value);
+
+    // Use selected shop location chip postal code if available, else fall back to input field
+    const origin_postal_code = selectedShopLocation
+      ? selectedShopLocation.postal
+      : originInput
+        ? (originInput.value || "").trim()
+        : "";
 
     if (!/^\d{4,10}$/.test(destination_postal_code)) {
       setStatus(
@@ -149,29 +268,48 @@
       destInput.focus();
       return;
     }
+
     if (!Number.isFinite(weight) || weight <= 0) {
       setStatus(t.shipCheckInvalidWeight || "Enter a valid weight", true);
       weightInput.focus();
       return;
     }
 
-    const checked = Array.from(
-      document.querySelectorAll('input[name="ship-courier"]:checked'),
-    ).map((cb) => cb.value);
+    if (origin_postal_code && !/^\d{4,10}$/.test(origin_postal_code)) {
+      setStatus(
+        t.shipCheckInvalidOrigin || "Enter a valid shop postal code",
+        true,
+      );
+      if (originInput) originInput.focus();
+      return;
+    }
+
+    // Collect courier selections from chips or fallback checkboxes
+    const checked = selectedCouriers.length
+      ? selectedCouriers.map((c) => c.code)
+      : Array.from(
+          document.querySelectorAll('input[name="ship-courier"]:checked'),
+        ).map((cb) => cb.value);
 
     if (results) results.innerHTML = "";
     setStatus(t.shipCheckLoading || "Checking rates… 🚚");
     if (submitBtn) submitBtn.disabled = true;
 
     try {
+      const payload = {
+        destination_postal_code,
+        weight,
+        couriers: checked.length ? checked.join(",") : undefined,
+      };
+
+      if (origin_postal_code) {
+        payload.origin_postal_code = origin_postal_code;
+      }
+
       const res = await fetch("/api/rates", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          destination_postal_code,
-          weight,
-          couriers: checked.length ? checked.join(",") : undefined,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json().catch(() => ({}));
@@ -192,12 +330,27 @@
     }
   }
 
+  // ============================================================
+  // 5. App Initialization
+  // ============================================================
   function init() {
     const form = document.getElementById("ship-check-form");
-    if (!form) return; // modal markup not present on this page
+    if (!form) return;
 
+    if (
+      window.CONFIG &&
+      CONFIG.shipCheck &&
+      Array.isArray(CONFIG.shipCheck.couriers)
+    ) {
+      availableCouriers = CONFIG.shipCheck.couriers;
+      selectedCouriers = [...CONFIG.shipCheck.couriers];
+    }
+
+    renderShopLocationChip();
+    renderCourierChips();
     renderCourierCheckboxes();
     applyShipCheckTexts();
+
     form.addEventListener("submit", handleSubmit);
   }
 

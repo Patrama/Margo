@@ -147,6 +147,7 @@
           </button>
         </div>
         <form id="ship-check-form" class="ship-check-form">
+          <!-- 1. Destination Postal Code (Default) -->
           <label for="ship-dest">Destination Postal Code</label>
           <input
             type="text"
@@ -157,6 +158,7 @@
             required
           />
 
+          <!-- 2. Weight (Gr) (Default) -->
           <label for="ship-weight">Weight (grams)</label>
           <input
             type="number"
@@ -167,12 +169,38 @@
             required
           />
 
-          <label id="ship-check-couriers-label">Couriers</label>
-          <div class="ship-check-couriers" id="ship-check-couriers"></div>
+          <!-- 3. Shop Postal Code (Section 3) -->
+          <label for="ship-origin">Shop Postal Code</label>
+          <input
+            type="text"
+            id="ship-origin"
+            inputmode="numeric"
+            autocomplete="postal-code"
+            placeholder="e.g. 60111"
+          />
 
-          <button type="submit" class="btn ship-check-submit">
-            Check Price
-          </button>
+          <!-- 4. Couriers (Section 2) -->
+          <div class="form-group">
+            <label id="ship-check-couriers-label">Couriers</label>
+
+            <!-- Container for selected courier chips -->
+            <div id="courier-chips-container" class="chips-wrapper"></div>
+
+            <!-- Search input & dynamic dropdown -->
+            <div class="courier-search-wrapper" style="position: relative">
+              <input
+                type="text"
+                id="courier-search-input"
+                placeholder="Search courier (e.g. JNE, SiCepat)..."
+                autocomplete="off"
+              />
+              <div
+                id="courier-dropdown-results"
+                class="search-dropdown"
+                style="display: none"
+              ></div>
+            </div>
+          </div>
         </form>
         <div id="ship-check-status" class="ship-check-status"></div>
         <div id="ship-check-results" class="ship-check-results"></div>
