@@ -4,7 +4,7 @@
 // CONFIG.js — all crucial / tunable values for the application
 // ============================================================
 const CONFIG = {
-  apiBaseUrl: "https://ivy-margo.vercel.app/",
+  apiBaseUrl: "https://ivy-margo.vercel.app",
   // NOTE: The Google Sheets CSV URL used to live here as `csvUrl`. It now
   // lives server-side only, in the CSV_URL Vercel environment variable
   // read by /api/catalog.js, so it's no longer visible in client code.
