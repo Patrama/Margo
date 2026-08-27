@@ -174,6 +174,7 @@ function writeDataCache(data, categories) {
 function setData(data, categories) {
   state.data = data;
   state.categories = categories;
+  window.catalogData = data; // Expose globally for ship-check-app.js
 
   state.searchIndex = data.map((item) => {
     let searchableStr = "";

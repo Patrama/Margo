@@ -169,15 +169,28 @@
             required
           />
 
-          <!-- 3. Shop Postal Code (Section 3) -->
-          <label for="ship-origin">Shop Postal Code</label>
-          <input
-            type="text"
-            id="ship-origin"
-            inputmode="numeric"
-            autocomplete="postal-code"
-            placeholder="e.g. 60111"
-          />
+          <!-- 3. Shop Postal Code -->
+          <div class="form-group">
+            <label for="ship-origin">Shop Postal Code / Location</label>
+
+            <!-- Container for selected shop location chip -->
+            <div id="shop-location-chip-container" class="chips-wrapper"></div>
+
+            <!-- Search wrapper with dynamic dropdown -->
+            <div class="shop-location-wrapper" style="position: relative">
+              <input
+                type="text"
+                id="ship-origin"
+                placeholder="e.g. Margo, Bandung, or 40287..."
+                autocomplete="off"
+              />
+              <div
+                id="shop-location-dropdown"
+                class="search-dropdown"
+                style="display: none"
+              ></div>
+            </div>
+          </div>
 
           <!-- 4. Couriers (Section 2) -->
           <div class="form-group">
@@ -201,6 +214,7 @@
               ></div>
             </div>
           </div>
+          <button type="submit" class="ship-check-submit">Check Price</button>
         </form>
         <div id="ship-check-status" class="ship-check-status"></div>
         <div id="ship-check-results" class="ship-check-results"></div>

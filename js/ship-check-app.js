@@ -11,6 +11,26 @@
   let selectedShopLocation = null; // Single selection: { name, postal }
   let shopLocations = []; // Populated from CSV or Config
 
+  // Populate shopLocations array from global CSV catalog data
+  function populateShopLocations() {
+    if (Array.isArray(window.catalogData)) {
+      const locationsMap = new Map();
+
+      window.catalogData.forEach((item) => {
+        const name = item["SHOP NAME"] || item["SHOP_NAME"];
+        const postal = String(
+          item["SHOP POSTAL"] || item["SHOP_POSTAL"] || "",
+        ).trim();
+
+        if (name && postal && !locationsMap.has(name)) {
+          locationsMap.set(name, { name: String(name).trim(), postal });
+        }
+      });
+
+      shopLocations = Array.from(locationsMap.values());
+    }
+  }
+
   function filterShopLocations(query) {
     if (!query) return [];
     const q = query.toLowerCase();
@@ -23,7 +43,6 @@
     selectedShopLocation = loc;
     renderShopLocationChip();
 
-    // Automatically update the input value if present
     const originInput = document.getElementById("ship-origin");
     if (originInput && loc) {
       originInput.value = loc.postal;
@@ -50,6 +69,54 @@
         <button type="button" class="chip-remove" onclick="window.removeShopLocation()">&times;</button>
       </span>
     `;
+  }
+
+  // Bind keypress & dropdown clicks for #ship-origin
+  function bindShopLocationSearchEvents() {
+    const originInput = document.getElementById("ship-origin");
+    const dropdown = document.getElementById("shop-location-dropdown");
+    if (!originInput || !dropdown) return;
+
+    originInput.addEventListener("input", (e) => {
+      const query = e.target.value.trim();
+      const matches = filterShopLocations(query);
+
+      if (!matches.length || !query) {
+        dropdown.style.display = "none";
+        dropdown.innerHTML = "";
+        return;
+      }
+
+      dropdown.innerHTML = matches
+        .map(
+          (loc) => `
+          <div class="dropdown-item" data-name="${escapeAttr(loc.name)}" data-postal="${escapeAttr(loc.postal)}">
+            📍 <strong>${escapeHtmlLocal(loc.name)}</strong> (${escapeHtmlLocal(loc.postal)})
+          </div>
+        `,
+        )
+        .join("");
+      dropdown.style.display = "block";
+    });
+
+    dropdown.addEventListener("click", (e) => {
+      const item = e.target.closest(".dropdown-item");
+      if (!item) return;
+
+      const name = item.getAttribute("data-name");
+      const postal = item.getAttribute("data-postal");
+
+      selectShopLocation({ name, postal });
+
+      originInput.value = "";
+      dropdown.style.display = "none";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".shop-location-wrapper")) {
+        dropdown.style.display = "none";
+      }
+    });
   }
 
   // ============================================================
@@ -104,6 +171,53 @@
     `,
       )
       .join("");
+  }
+
+  // Bind keypress & dropdown clicks for #courier-search-input
+  function bindCourierSearchEvents() {
+    const courierInput = document.getElementById("courier-search-input");
+    const dropdown = document.getElementById("courier-dropdown-results");
+    if (!courierInput || !dropdown) return;
+
+    courierInput.addEventListener("input", (e) => {
+      const query = e.target.value.trim();
+      const matches = filterCouriers(query);
+
+      if (!matches.length || !query) {
+        dropdown.style.display = "none";
+        dropdown.innerHTML = "";
+        return;
+      }
+
+      dropdown.innerHTML = matches
+        .map(
+          (c) => `
+        <div class="dropdown-item" data-code="${escapeAttr(c.code)}" data-label="${escapeAttr(c.label)}">
+          🚚 <strong>${escapeHtmlLocal(c.label)}</strong> (${escapeHtmlLocal(c.code)})
+        </div>
+      `,
+        )
+        .join("");
+      dropdown.style.display = "block";
+    });
+
+    dropdown.addEventListener("click", (e) => {
+      const item = e.target.closest(".dropdown-item");
+      if (!item) return;
+
+      const code = item.getAttribute("data-code");
+      const label = item.getAttribute("data-label");
+
+      selectCourier({ code, label });
+      courierInput.value = "";
+      dropdown.style.display = "none";
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".courier-search-wrapper")) {
+        dropdown.style.display = "none";
+      }
+    });
   }
 
   // ============================================================
@@ -346,9 +460,12 @@
       selectedCouriers = [...CONFIG.shipCheck.couriers];
     }
 
+    // Populate data & bind handlers
+    populateShopLocations();
+    bindShopLocationSearchEvents();
     renderShopLocationChip();
     renderCourierChips();
-    renderCourierCheckboxes();
+    bindCourierSearchEvents();
     applyShipCheckTexts();
 
     form.addEventListener("submit", handleSubmit);
