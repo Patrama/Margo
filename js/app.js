@@ -199,12 +199,14 @@ async function fetchCSV(fromCache) {
     CONFIG.fetchTimeout || 30000,
   );
   try {
-    const res = await fetch("/api/catalog", {
+    // CHANGE THIS LINE: Use absolute URL with CONFIG.apiBaseUrl
+    const res = await fetch(`${CONFIG.apiBaseUrl}/api/catalog`, {
       cache: "force-cache",
       signal: controller.signal,
     });
     const text = await res.text();
     const { data, categories } = parseCSV(text);
+    // ... rest of function remains identical
 
     const cached = readDataCache();
     if (

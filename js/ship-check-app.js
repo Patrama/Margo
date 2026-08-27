@@ -420,13 +420,15 @@
         payload.origin_postal_code = origin_postal_code;
       }
 
-      const res = await fetch("/api/rates", {
+      // CHANGE THIS LINE: Use absolute URL with CONFIG.apiBaseUrl
+      const res = await fetch(`${CONFIG.apiBaseUrl}/api/rates`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json().catch(() => ({}));
+      // ... rest of function remains identical
 
       if (!res.ok) {
         setStatus(
