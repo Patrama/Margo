@@ -208,7 +208,17 @@ async function fetchCSV(fromCache) {
       },
     );
     const text = await res.text();
-    const { data, categories } = parseCSV(text);
+
+    let data, categories;
+    try {
+      const parsed = parseCSV(text);
+      data = parsed.data;
+      categories = parsed.categories;
+    } catch (parseErr) {
+      console.error("CSV parsing failed:", parseErr);
+      return;
+    }
+    // const { data, categories } = parseCSV(text);
     // ... rest of function remains identical
 
     const cached = readDataCache();
