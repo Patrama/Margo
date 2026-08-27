@@ -198,7 +198,7 @@ async function fetchCSV(fromCache) {
     CONFIG.fetchTimeout || 30000,
   );
   try {
-    const res = await fetch(CONFIG.csvUrl, {
+    const res = await fetch("/api/catalog", {
       cache: "force-cache",
       signal: controller.signal,
     });

@@ -1,0 +1,229 @@
+/** @format */
+
+/* ------------------------------------------------------------
+   Shipment Price Check — form
+   ------------------------------------------------------------ */
+.ship-check-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.ship-check-form label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--lg-text-soft);
+  margin-top: 0.5rem;
+}
+.ship-check-form label:first-child {
+  margin-top: 0;
+}
+
+.ship-check-form input[type="text"],
+.ship-check-form input[type="number"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--lg-border);
+  border-radius: 14px;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  color: var(--lg-text);
+  outline: none;
+  background: var(--lg-glass);
+  box-shadow: var(--lg-shadow-inset);
+  transition:
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    background-color 0.35s ease;
+}
+[data-theme="dark"] .ship-check-form input[type="text"],
+[data-theme="dark"] .ship-check-form input[type="number"] {
+  background: rgba(255, 255, 255, 0.08);
+}
+.ship-check-form input::placeholder {
+  color: var(--lg-text-faint);
+}
+.ship-check-form input:focus {
+  border-color: var(--lg-teal);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 0 0 3px rgba(78, 205, 196, 0.25),
+    0 0 18px rgba(78, 205, 196, 0.2);
+}
+
+/* Courier checkbox grid */
+.ship-check-couriers {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.ship-check-courier-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--lg-text);
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--lg-border);
+  border-radius: 12px;
+  background: var(--lg-glass);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    transform 0.3s ease;
+}
+[data-theme="dark"] .ship-check-courier-label {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.ship-check-courier-label:hover {
+  background: var(--lg-glass-strong);
+  border-color: var(--lg-teal);
+  transform: translateY(-1px);
+}
+.ship-check-courier-label input {
+  width: 1.1rem;
+  height: 1.1rem;
+  cursor: pointer;
+  accent-color: var(--lg-teal);
+  flex-shrink: 0;
+}
+
+.ship-check-submit {
+  margin-top: 0.85rem;
+  width: 100%;
+  justify-content: center;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------
+   Status line (loading / error / empty)
+   ------------------------------------------------------------ */
+.ship-check-status {
+  margin-top: 0.85rem;
+  font-size: 0.875rem;
+  color: var(--lg-text-soft);
+  text-align: center;
+  min-height: 1.2em;
+}
+.ship-check-status.error {
+  color: var(--lg-coral);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------
+   Results list
+   ------------------------------------------------------------ */
+.ship-check-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-right: 0.25rem;
+}
+
+.ship-check-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--lg-border);
+  border-radius: 14px;
+  background: var(--lg-glass);
+}
+[data-theme="dark"] .ship-check-result {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.ship-check-result-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.ship-check-result-courier {
+  font-weight: 600;
+  color: var(--lg-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ship-check-result-service {
+  font-size: 0.8rem;
+  color: var(--lg-text-faint);
+}
+.ship-check-result-price {
+  font-weight: 700;
+  color: var(--lg-teal);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Scrollbar to match #cat-grid / .radio-group */
+.ship-check-results::-webkit-scrollbar {
+  width: 8px !important;
+}
+.ship-check-results::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--lg-teal), var(--lg-purple));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.ship-check-results::-webkit-scrollbar-track {
+  background: var(--lg-ink-2);
+  border-radius: 999px;
+}
+.ship-check-results {
+  scrollbar-width: thin;
+  scrollbar-color: var(--lg-teal) var(--lg-ink-2);
+}
+
+/* Chips Style */
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  background-color: #e2e8f0;
+  color: #1e293b;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.chip button {
+  background: none;
+  border: none;
+  margin-left: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #64748b;
+}
+
+.chip button:hover {
+  color: #ef4444;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ship-check-courier-label,
+  .ship-check-form input {
+    transition: none !important;
+  }
+}

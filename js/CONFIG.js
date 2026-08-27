@@ -4,9 +4,10 @@
 // CONFIG.js — all crucial / tunable values for the application
 // ============================================================
 const CONFIG = {
-  // Google Sheets CSV source (published)
-  csvUrl:
-    "https://doc-0o-ac-sheets.googleusercontent.com/pub/54bogvaave6cua4cdnls17ksc4/a04vqb6o7ub311ih91fpivnjac/1787719575000/102541565158245290021/*/e@2PACX-1vSomjHV5YQROVr9ZJ5U69kOw0F4p_TZgLmvikpNM4CXSGLkRxYsjgyaaHI-onX_uXg7jL7wJuJMj0t1?gid=621905479&single=true&output=csv",
+  // NOTE: The Google Sheets CSV URL used to live here as `csvUrl`. It now
+  // lives server-side only, in the CSV_URL Vercel environment variable
+  // read by /api/catalog.js, so it's no longer visible in client code.
+  // app.js fetches "/api/catalog" instead.
 
   // Category 4x4 layout mapping
   categoryLayout: { rows: 4, cols: 4 },
@@ -56,6 +57,25 @@ const CONFIG = {
   // Minimum card width inside the multi-column grid
   cardMinWidth: 320,
 
+  // ------------------------------------------------------------
+  // "Shipment Price Check" modal (Biteship). Only non-secret display
+  // config lives here — the Biteship API key and the shop's origin
+  // postal code live server-side only, in Vercel env vars read by
+  // /api/rates.js (BITESHIP_API_KEY, BITESHIP_ORIGIN_POSTAL_CODE).
+  // ------------------------------------------------------------
+  shipCheck: {
+    // Courier checkboxes shown in the modal. `code` must match a
+    // Biteship courier code (see Biteship's Courier API).
+    couriers: [
+      { code: "jne", label: "JNE" },
+      { code: "jnt", label: "J&T" },
+      { code: "sicepat", label: "SiCepat" },
+      { code: "anteraja", label: "AnterAja" },
+      { code: "ninja", label: "Ninja Xpress" },
+    ],
+    defaultWeight: 1000, // grams
+  },
+
   // Rename raw CSV column headers for display
   columnRenames: {
     BERAT: "Berat (gr)",
@@ -71,15 +91,15 @@ const CONFIG = {
   // Tab definitions: label + which CSV columns to display
   tabs: {
     ONLINE_PRICE: {
-      label: "Harga Online 🌐",
+      label: "Harga Online 💰",
       cols: ["HARGA ON", "GROSS ON"],
     },
     OFFLINE_PRICE: {
-      label: "Harga Offline 🛖",
+      label: "Harga Offline 🏪",
       cols: ["HARGA OFF", "GROSS OFF"],
     },
     DETAILS: {
-      label: "DETAILS 🔷",
+      label: "DETAILS 📦",
       cols: ["BERAT", "MIN PEMBELIAN (PCS)", "MAKS. PEMBELIAN (PCS)"],
     },
   },
@@ -128,6 +148,19 @@ const CONFIG = {
     loadMore: "Load more…",
     loadingImage: "Loading image…",
     imageLoadError: "Image failed to load ❌",
+
+    // Shipment Price Check modal
+    shipCheckButton: "Cek Ongkir 🚚",
+    shipCheckTitle: "Shipment Price Check 🚚",
+    shipCheckDestLabel: "Destination Postal Code",
+    shipCheckWeightLabel: "Weight (grams)",
+    shipCheckCouriersLabel: "Couriers",
+    shipCheckSubmit: "Check Price",
+    shipCheckLoading: "Checking rates… 🚚",
+    shipCheckError: "Failed to check shipping rates ❌",
+    shipCheckEmpty: "No couriers available for this destination",
+    shipCheckInvalidDest: "Enter a valid destination postal code",
+    shipCheckInvalidWeight: "Enter a valid weight",
   },
 
   // CSS injected into <head> at runtime (keeps layout tuning in CONFIG)

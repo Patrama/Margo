@@ -31,6 +31,7 @@
     <link rel="dns-prefetch" href="https://images.weserv.nl" />
 
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/ship-check.css" />
   </head>
   <body>
     <!-- Floating Toast Notification -->
@@ -48,6 +49,13 @@
           Categories 🍃
         </button>
         <button class="btn" onclick="openModal('opt-modal')">Tabs ⚙️</button>
+        <button
+          class="btn"
+          id="ship-check-trigger"
+          onclick="openModal('ship-modal')"
+        >
+          Cek Ongkir 🚚
+        </button>
         <button
           class="btn"
           id="theme-toggle"
@@ -125,12 +133,61 @@
       </div>
     </div>
 
+    <!-- Shipment Price Check Modal (Biteship) -->
+    <div
+      id="ship-modal"
+      class="modal"
+      onclick="closeModal(event, 'ship-modal')"
+    >
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Shipment Price Check 🚚</h3>
+          <button class="close-btn" onclick="closeModal(null, 'ship-modal')">
+            &times;
+          </button>
+        </div>
+        <form id="ship-check-form" class="ship-check-form">
+          <label for="ship-dest">Destination Postal Code</label>
+          <input
+            type="text"
+            id="ship-dest"
+            inputmode="numeric"
+            autocomplete="postal-code"
+            placeholder="e.g. 12440"
+            required
+          />
+
+          <label for="ship-weight">Weight (grams)</label>
+          <input
+            type="number"
+            id="ship-weight"
+            min="1"
+            step="1"
+            value="1000"
+            required
+          />
+
+          <label id="ship-check-couriers-label">Couriers</label>
+          <div class="ship-check-couriers" id="ship-check-couriers"></div>
+
+          <button type="submit" class="btn ship-check-submit">
+            Check Price
+          </button>
+        </form>
+        <div id="ship-check-status" class="ship-check-status"></div>
+        <div id="ship-check-results" class="ship-check-results"></div>
+      </div>
+    </div>
+
     <!-- All scripts deferred: none render-blocking; execution order is
-         preserved (CONFIG → fx → typewriter → app). fx.js only injects
-         CSS from CONFIG.fx — it never touches the typewriter or app. -->
+         preserved (CONFIG → fx → typewriter → app → ship-check-app).
+         fx.js only injects CSS from CONFIG.fx — it never touches the
+         typewriter or app. ship-check-app.js runs after app.js so it can
+         reuse app.js's global openModal()/closeModal(). -->
     <script src="js/CONFIG.js" defer></script>
     <script src="js/fx.js" defer></script>
     <script src="js/typewriter-effect.js" defer></script>
     <script src="js/app.js" defer></script>
+    <script src="js/ship-check-app.js" defer></script>
   </body>
 </html>
