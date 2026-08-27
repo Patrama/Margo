@@ -23,8 +23,18 @@ const CONFIG = {
   // Batch size for paginated list rendering (keeps DOM small on low-end devices)
   pageSize: 24,
 
+  // How long (ms) the link-image button must be pressed & held before it
+  // fires the "hold" action (see swapButtonActions below) instead of the
+  // "tap/release" action.
+  linkHoldDelay: 800,
+
+  // Controls which button gesture triggers which column's link.
+  //   0 (default) = hold -> "LINK" (image-preview modal); tap/release -> "CANVA" (new tab)
+  //   1 (swapped)  = hold -> "CANVA" (new tab); tap/release -> "LINK" (image-preview modal)
+  swapButtonActions: 1,
+
   // Debounce delay (ms) for the search input
-  debounceDelay: 500,
+  debounceDelay: 550,
 
   // How long (ms) the cached CSV data is considered fresh before a force refresh
   cacheTTL: 24 * 60 * 60 * 1000, // 24 hours
@@ -107,6 +117,7 @@ const CONFIG = {
     loadingMessage: "Loading data... 🌬️",
     loadingError: "Error loading data ❌",
     noLinkAlert: "No link available",
+    noCanvaAlert: "No Canva design available",
     allCategories: "ALL",
     linkButton: "🖼️",
     tabsButton: "Default Tabs ⚙️",

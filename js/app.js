@@ -477,10 +477,10 @@ function bindLoadMore() {
 // ------------------------------------------------------------
 // Delegated Events
 // ------------------------------------------------------------
-// The image button now serves two purposes on the same element:
-//  - Tap/click (short press)  -> opens the "CANVA" column link (new tab)
-//  - Press & hold for 1s      -> opens the "LINK" column via the old
-//                                 image-preview modal (long-press = legacy path)
+// The image button serves two purposes on the same element, one fired on
+// press-and-hold and the other on a quick tap/release. Which column ("LINK"
+// vs "CANVA") maps to which gesture is controlled by
+// CONFIG.swapButtonActions (0 = default, 1 = swapped) — see CONFIG.js.
 let linkHoldTimer = null;
 let linkHoldTriggered = false;
 
@@ -495,6 +495,35 @@ function getItemForBtn(btn) {
 function cancelLinkHold() {
   clearTimeout(linkHoldTimer);
   linkHoldTimer = null;
+}
+
+// Resolve, at call time, which CSV column drives the "hold" gesture and
+// which drives the "tap/release" gesture. Read live off CONFIG so a
+// runtime change to swapButtonActions takes effect immediately.
+function getHoldColumn() {
+  return CONFIG.swapButtonActions ? "CANVA" : "LINK";
+}
+function getReleaseColumn() {
+  return CONFIG.swapButtonActions ? "LINK" : "CANVA";
+}
+
+// Perform the actual action for a given column ("LINK" -> image-preview
+// modal, "CANVA" -> open in a new tab), with the matching "not available"
+// alert when the row has no value for that column.
+function performLinkColumnAction(column, item) {
+  if (!item) return;
+  const url = item[column];
+  if (!url) {
+    alert(
+      column === "LINK" ? CONFIG.texts.noLinkAlert : CONFIG.texts.noCanvaAlert,
+    );
+    return;
+  }
+  if (column === "LINK") {
+    openImageModal(url);
+  } else {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
 }
 
 function bindListClick() {
@@ -521,14 +550,7 @@ function bindListClick() {
     linkHoldTimer = setTimeout(() => {
       linkHoldTriggered = true;
       linkBtn.classList.remove("holding");
-      const item = getItemForBtn(linkBtn);
-      if (!item) return;
-      const url = item["LINK"];
-      if (url) {
-        openImageModal(url);
-      } else {
-        alert(CONFIG.texts.noLinkAlert);
-      }
+      performLinkColumnAction(getHoldColumn(), getItemForBtn(linkBtn));
     }, CONFIG.linkHoldDelay || 1000);
   });
 
@@ -549,8 +571,8 @@ function bindListClick() {
     const linkBtn = e.target.closest(".btn-link");
     if (linkBtn) {
       e.stopPropagation();
-      // If the hold already fired (opened the LINK modal), swallow the
-      // resulting click so it doesn't also open the CANVA link.
+      // If the hold already fired, swallow the resulting click so it
+      // doesn't also fire the tap/release action.
       if (linkHoldTriggered) {
         linkHoldTriggered = false;
         return;
@@ -558,14 +580,7 @@ function bindListClick() {
       cancelLinkHold();
       linkBtn.classList.remove("holding");
 
-      const item = getItemForBtn(linkBtn);
-      if (!item) return;
-      const url = item["CANVA"];
-      if (url) {
-        window.open(url, "_blank", "noopener,noreferrer");
-      } else {
-        alert(CONFIG.texts.noCanvaAlert);
-      }
+      performLinkColumnAction(getReleaseColumn(), getItemForBtn(linkBtn));
       return;
     }
 

@@ -451,7 +451,11 @@ body::after {
   color: var(--lg-text-soft);
 }
 .btn-link {
-  min-height: -webkit-fill-available;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and 11 */
+  user-select: none;
+  align-self: center; /* Ensures normal height alignment across all browsers */
+  min-height: 48px; /* Touch-friendly target size for mobile */
 
   background: rgba(0, 0, 0, 0.05);
   color: var(--lg-text);
