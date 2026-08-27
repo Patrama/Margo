@@ -73,7 +73,7 @@ const CONFIG = {
       { code: "ninja", label: "Ninja Xpress" },
     ],
     defaultWeight: 1000, // grams
-    defaultOriginPostalCode: "", // Optional default shop postal code
+    defaultOriginPostalCode: "40287", // Optional default shop postal code
   },
 
   texts: {
