@@ -1,20 +1,17 @@
 /** @format */
 
 // ============================================================
-// app-new.js — Optimized Application Logic
+// app-optimized.js — Production Ready Application Logic
+// Optimized Unified Single-File Engine
 // Depends on: CONFIG (CONFIG.js must be loaded first)
-//
-// Refactor highlights:
-//  - Trimmed search index (excludes URLs/metadata to save RAM on low-end devices)
-//  - Cached tab schema lookups outside the card rendering loop
-//  - Removed dead extractCategories() function
-//  - Direct HTTPS conversion for Google Drive to eliminate third-party proxy latency
-//  - High-performance, low-memory CSV string parser
 // ============================================================
 
+// ============================================================
+// 1. STATE MANAGEMENT
+// ============================================================
 const state = {
   data: [],
-  searchIndex: [], // Precomputed lightweight lowercase strings (SKU + CATEGORY + NAME/TITLE)
+  searchIndex: [], // Lightweight lowercase tokens (SKU + CATEGORY + NAME/TITLE)
   categories: [],
   selectedCategory: "",
   activeTab: CONFIG.defaultActiveTab,
@@ -25,10 +22,12 @@ const state = {
 };
 
 let imgLoadTimer = null;
+let linkHoldTimer = null;
+let linkHoldTriggered = false;
 
-// ------------------------------------------------------------
-// Init
-// ------------------------------------------------------------
+// ============================================================
+// 2. CORE INITIALIZATION
+// ============================================================
 function init() {
   initTheme();
   applyTexts();
@@ -41,20 +40,16 @@ function init() {
 
   const cached = readDataCache();
   if (cached) {
-    // Instant first paint from cache, then refresh in background (SWR)
     setData(cached.data, cached.categories);
     const loadingEl = document.getElementById("loading");
     if (loadingEl) loadingEl.style.display = "none";
     renderAll();
-    fetchCSV(true);
+    fetchCSV(true); // SWR Refresh background
   } else {
     fetchCSV(false);
   }
 }
 
-// ------------------------------------------------------------
-// Texts & Typewriter
-// ------------------------------------------------------------
 function applyTexts() {
   const buttons = document.querySelectorAll(".header-controls .btn");
   if (buttons[0]) buttons[0].textContent = CONFIG.texts.categoriesButton;
@@ -122,9 +117,9 @@ function applyTexts() {
   if (imgLoading) imgLoading.textContent = CONFIG.texts.loadingImage;
 }
 
-// ------------------------------------------------------------
-// Preferences Cache
-// ------------------------------------------------------------
+// ============================================================
+// 3. STORAGE & CACHE CONTROLLER
+// ============================================================
 function loadCache() {
   try {
     const cache = JSON.parse(localStorage.getItem(CONFIG.cacheKey) || "{}");
@@ -145,34 +140,6 @@ function saveCache() {
   );
 }
 
-// ------------------------------------------------------------
-// Theme Management
-// ------------------------------------------------------------
-function initTheme() {
-  const saved = localStorage.getItem("theme");
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const theme = saved || (prefersDark ? "dark" : "light");
-  document.documentElement.setAttribute("data-theme", theme);
-  updateThemeIcon(theme);
-}
-
-function toggleTheme() {
-  const current =
-    document.documentElement.getAttribute("data-theme") || "light";
-  const next = current === "light" ? "dark" : "light";
-  document.documentElement.setAttribute("data-theme", next);
-  localStorage.setItem("theme", next);
-  updateThemeIcon(next);
-}
-
-function updateThemeIcon(theme) {
-  const btn = document.getElementById("theme-toggle");
-  if (btn) btn.textContent = theme === "light" ? "🌙" : "☀️";
-}
-
-// ------------------------------------------------------------
-// CSV Data Cache (Stale-While-Revalidate)
-// ------------------------------------------------------------
 const DATA_CACHE_KEY = "catalogDataCache";
 
 function readDataCache() {
@@ -198,20 +165,16 @@ function writeDataCache(data, categories) {
         timestamp: Date.now(),
       }),
     );
-  } catch (e) {
-    // LocalStorage quota exceeded or disabled
-  }
+  } catch (e) {}
 }
 
-// ------------------------------------------------------------
-// Data Handling & Search Indexing
-// ------------------------------------------------------------
+// ============================================================
+// 4. DATA PIPELINE & COMPACT INDEXING
+// ============================================================
 function setData(data, categories) {
   state.data = data;
   state.categories = categories;
 
-  // OPTIMIZATION: Build a lightweight search index consisting ONLY of text fields.
-  // Excludes giant URLs and metadata to keep memory footprint low on weak devices.
   state.searchIndex = data.map((item) => {
     let searchableStr = "";
     if (item["SKU"]) searchableStr += item["SKU"] + " ";
@@ -219,7 +182,6 @@ function setData(data, categories) {
     if (item["NAME"]) searchableStr += item["NAME"] + " ";
     if (item["TITLE"]) searchableStr += item["TITLE"] + " ";
 
-    // Fallback: If none of the standard fields exist, index non-URL string values
     if (!searchableStr) {
       searchableStr = Object.values(item)
         .filter((v) => typeof v === "string" && !v.startsWith("http"))
@@ -320,22 +282,19 @@ function parseCSV(str) {
     if (obj["CATEGORY"]) catSet.add(obj["CATEGORY"]);
   }
 
-  return {
-    data,
-    categories: Array.from(catSet).sort(),
-  };
+  return { data, categories: Array.from(catSet).sort() };
 }
 
-// ------------------------------------------------------------
-// Filtering
-// ------------------------------------------------------------
+// ============================================================
+// 5. QUERY FILTER ROUTER
+// ============================================================
 function getFiltered() {
   const query = document
     .getElementById("search-input")
     .value.toLowerCase()
     .trim();
-
   const filtered = [];
+
   for (let i = 0; i < state.data.length; i++) {
     const item = state.data[i];
     if (state.selectedCategory && item["CATEGORY"] !== state.selectedCategory)
@@ -362,11 +321,12 @@ function getFiltered() {
   return filtered;
 }
 
-// ------------------------------------------------------------
-// Optimized Batch Rendering
-// ------------------------------------------------------------
+// ============================================================
+// 6. HIGH-PERFORMANCE DOM RENDERING LAYER
+// ============================================================
 function renderList() {
   const container = document.getElementById("data-list");
+  if (!container) return;
   container.innerHTML = "";
   state.visibleCount = 0;
 
@@ -384,13 +344,13 @@ function renderList() {
 
 function renderBatch(filtered, start) {
   const container = document.getElementById("data-list");
+  if (!container) return;
   const end = Math.min(start + CONFIG.pageSize, filtered.length);
 
-  // OPTIMIZATION: Pre-calculate active & inactive tab column schemas ONCE per batch.
-  // Prevents running repetitive Object.keys() and schema lookups inside the card loop.
+  const fragment = document.createDocumentFragment();
+
   const activeTabKey = state.activeTab;
   const activeTabInfo = CONFIG.tabs[activeTabKey];
-
   const inactiveTabs = Object.keys(CONFIG.tabs)
     .filter((key) => key !== activeTabKey)
     .map((key) => ({
@@ -399,12 +359,18 @@ function renderBatch(filtered, start) {
       cols: CONFIG.tabs[key].cols,
     }));
 
-  let html = "";
   for (let i = start; i < end; i++) {
-    html += createCardHTML(filtered[i], i, activeTabInfo, inactiveTabs);
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = createCardHTML(
+      filtered[i],
+      i,
+      activeTabInfo,
+      inactiveTabs,
+    );
+    fragment.appendChild(wrapper.firstElementChild);
   }
 
-  container.insertAdjacentHTML("beforeend", html);
+  container.appendChild(fragment);
   state.visibleCount = end;
 }
 
@@ -413,10 +379,8 @@ function createCardHTML(item, index, activeTabInfo, inactiveTabs) {
   html += `<div class="card-header">`;
   html += `<div class="card-info">`;
   html += `<div class="sku-title">${escapeHtml(item["SKU"] || "-")}</div>`;
-  html += `<div class="tab-preview">`;
-  html += `<div class="spec-grid">`;
+  html += `<div class="tab-preview"><div class="spec-grid">`;
 
-  // Active Tab Specs
   if (activeTabInfo && activeTabInfo.cols) {
     for (let j = 0; j < activeTabInfo.cols.length; j++) {
       const col = activeTabInfo.cols[j];
@@ -431,7 +395,6 @@ function createCardHTML(item, index, activeTabInfo, inactiveTabs) {
   html += `<button class="btn-link">${escapeHtml(CONFIG.texts.linkButton)}</button>`;
   html += `</div>`;
 
-  // Accordion Body (Inactive Tabs)
   html += `<div class="card-body"><div class="card-body-inner">`;
   for (let k = 0; k < inactiveTabs.length; k++) {
     const t = inactiveTabs[k];
@@ -474,15 +437,21 @@ function bindLoadMore() {
   });
 }
 
-// ------------------------------------------------------------
-// Delegated Events
-// ------------------------------------------------------------
-// The image button serves two purposes on the same element, one fired on
-// press-and-hold and the other on a quick tap/release. Which column ("LINK"
-// vs "CANVA") maps to which gesture is controlled by
-// CONFIG.swapButtonActions (0 = default, 1 = swapped) — see CONFIG.js.
-let linkHoldTimer = null;
-let linkHoldTriggered = false;
+// ============================================================
+// 7. DECOUPLED GESTURE & INTERACTION CONTROLLER
+// ============================================================
+function cancelLinkHold() {
+  clearTimeout(linkHoldTimer);
+  linkHoldTimer = null;
+}
+
+function getHoldColumn() {
+  return CONFIG.swapButtonActions ? "CANVA" : "LINK";
+}
+
+function getReleaseColumn() {
+  return CONFIG.swapButtonActions ? "LINK" : "CANVA";
+}
 
 function getItemForBtn(btn) {
   const card = btn.closest(".card");
@@ -492,24 +461,6 @@ function getItemForBtn(btn) {
   ];
 }
 
-function cancelLinkHold() {
-  clearTimeout(linkHoldTimer);
-  linkHoldTimer = null;
-}
-
-// Resolve, at call time, which CSV column drives the "hold" gesture and
-// which drives the "tap/release" gesture. Read live off CONFIG so a
-// runtime change to swapButtonActions takes effect immediately.
-function getHoldColumn() {
-  return CONFIG.swapButtonActions ? "CANVA" : "LINK";
-}
-function getReleaseColumn() {
-  return CONFIG.swapButtonActions ? "LINK" : "CANVA";
-}
-
-// Perform the actual action for a given column ("LINK" -> image-preview
-// modal, "CANVA" -> open in a new tab), with the matching "not available"
-// alert when the row has no value for that column.
 function performLinkColumnAction(column, item) {
   if (!item) return;
   const url = item[column];
@@ -528,18 +479,15 @@ function performLinkColumnAction(column, item) {
 
 function bindListClick() {
   const container = document.getElementById("data-list");
+  if (!container) return;
 
   container.addEventListener("pointerdown", (e) => {
     const linkBtn = e.target.closest(".btn-link");
-    if (!linkBtn) return;
-    // Ignore non-primary buttons (e.g. right-click) for the hold gesture
-    if (e.button !== undefined && e.button !== 0) return;
+    if (!linkBtn || (e.button !== undefined && e.button !== 0)) return;
 
     linkHoldTriggered = false;
     cancelLinkHold();
 
-    // Keep receiving pointer events on this element even if the
-    // finger/cursor drifts slightly during the hold.
     if (linkBtn.setPointerCapture) {
       try {
         linkBtn.setPointerCapture(e.pointerId);
@@ -559,10 +507,9 @@ function bindListClick() {
     if (linkBtn) linkBtn.classList.remove("holding");
     cancelLinkHold();
   };
+
   container.addEventListener("pointerup", releaseHold);
   container.addEventListener("pointercancel", releaseHold);
-
-  // Prevent the mobile long-press context menu from appearing on the button
   container.addEventListener("contextmenu", (e) => {
     if (e.target.closest(".btn-link")) e.preventDefault();
   });
@@ -571,15 +518,14 @@ function bindListClick() {
     const linkBtn = e.target.closest(".btn-link");
     if (linkBtn) {
       e.stopPropagation();
-      // If the hold already fired, swallow the resulting click so it
-      // doesn't also fire the tap/release action.
+      e.preventDefault();
+
       if (linkHoldTriggered) {
         linkHoldTriggered = false;
         return;
       }
       cancelLinkHold();
       linkBtn.classList.remove("holding");
-
       performLinkColumnAction(getReleaseColumn(), getItemForBtn(linkBtn));
       return;
     }
@@ -591,18 +537,18 @@ function bindListClick() {
   });
 }
 
-// Direct URL Normalization (Bypasses proxy overhead when possible)
+// ============================================================
+// 8. ASYNC IMAGE NORMALIZATION
+// ============================================================
 function normalizeImageUrl(url) {
   if (!url) return url;
 
-  // Normalize Google Drive share URLs directly to direct view links
   let m = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/);
   if (m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
 
   m = url.match(/docs\.google\.com\/uc\?(?:.*&)?id=([^&#]+)/);
   if (m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
 
-  // Enforce HTTPS for non-SSL links
   if (url.startsWith("http://")) {
     return (
       "https://images.weserv.nl/?url=" +
@@ -615,6 +561,7 @@ function normalizeImageUrl(url) {
 function openImageModal(url) {
   const img = document.getElementById("modal-image");
   const loading = document.getElementById("img-loading");
+  if (!img || !loading) return;
 
   clearTimeout(imgLoadTimer);
   img.onload = null;
@@ -647,11 +594,12 @@ function openImageModal(url) {
   img.src = finalUrl;
 }
 
-// ------------------------------------------------------------
-// Category Grid
-// ------------------------------------------------------------
+// ============================================================
+// 9. MODERN UI FILTER PANELS (Categories & Options)
+// ============================================================
 function renderCategories(filterText) {
   const grid = document.getElementById("cat-grid");
+  if (!grid) return;
   grid.style.gridTemplateColumns = `repeat(${CONFIG.categoryLayout.cols}, 1fr)`;
   grid.style.maxHeight = `${CONFIG.categoryLayout.rows * CONFIG.categoryItemHeight}px`;
 
@@ -670,6 +618,7 @@ function renderCategories(filterText) {
 
 function bindCategoryGrid() {
   const grid = document.getElementById("cat-grid");
+  if (!grid) return;
   grid.addEventListener("click", (e) => {
     const item = e.target.closest(".cat-item");
     if (!item) return;
@@ -686,11 +635,9 @@ function selectCategory(cat) {
   renderList();
 }
 
-// ------------------------------------------------------------
-// Tabs Options Modal
-// ------------------------------------------------------------
 function renderOptions() {
   const group = document.getElementById("opt-group");
+  if (!group) return;
   group.innerHTML = "";
 
   const keys = Object.keys(CONFIG.tabs);
@@ -718,9 +665,32 @@ function renderOptions() {
   }
 }
 
-// ------------------------------------------------------------
-// Search Debouncing
-// ------------------------------------------------------------
+// ============================================================
+// 10. SYSTEM UTILITIES
+// ============================================================
+
+// Floating Toast Notification
+let toastTimer = null;
+
+function showToast(message) {
+  const toast = document.getElementById("toast-banner");
+  if (!toast) return;
+
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2500);
+}
+
+// Global Alert Override
+// Replaces standard browser alert() everywhere without modifying existing function calls
+window.alert = function (message) {
+  showToast(message);
+};
+
 function bindSearch() {
   const input = document.getElementById("search-input");
   if (input) {
@@ -748,9 +718,28 @@ function renderAll() {
   renderList();
 }
 
-// ------------------------------------------------------------
-// Modal Helpers
-// ------------------------------------------------------------
+function initTheme() {
+  const saved = localStorage.getItem("theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const theme = saved || (prefersDark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+  updateThemeIcon(theme);
+}
+
+function toggleTheme() {
+  const current =
+    document.documentElement.getAttribute("data-theme") || "light";
+  const next = current === "light" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("theme", next);
+  updateThemeIcon(next);
+}
+
+function updateThemeIcon(theme) {
+  const btn = document.getElementById("theme-toggle");
+  if (btn) btn.textContent = theme === "light" ? "🌙" : "☀️";
+}
+
 function openModal(id) {
   const el = document.getElementById(id);
   if (el) el.classList.add("active");
@@ -769,5 +758,9 @@ function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => "&#" + c.charCodeAt(0) + ";");
 }
 
-// Initialize on DOM load
-init();
+// Bootstrap Application Safely
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
