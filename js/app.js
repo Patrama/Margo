@@ -477,10 +477,24 @@ function getItemForBtn(btn) {
   ];
 }
 
+function isAbsoluteHttpUrl(str) {
+  if (typeof str !== "string" || !str.trim()) return false;
+  try {
+    const u = new URL(str.trim());
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch (err) {
+    // Throws for anything that isn't a fully-qualified URL (relative
+    // paths, bare folder/file names, typos missing the scheme, etc.) —
+    // exactly the values that would otherwise silently resolve as a
+    // relative link against the current page and 404.
+    return false;
+  }
+}
+
 function performLinkColumnAction(column, item) {
   if (!item) return;
   const url = item[column];
-  if (!url) {
+  if (!isAbsoluteHttpUrl(url)) {
     alert(
       column === "LINK" ? CONFIG.texts.noLinkAlert : CONFIG.texts.noCanvaAlert,
     );
